@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HAMDO</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="logo.svg">
+<meta name="theme-color" content="#F46B35">
+<style>
+:root{--o:#F46B35;--od:#d9561f;--g1:#f4f4f5;--g2:#e2e2e5;--g3:#6b6b73;--tx:#222226}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;color:var(--tx);background:#fff;padding-bottom:40px}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--g2);padding:10px 14px}
+.top{display:flex;align-items:center;gap:10px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:22px;letter-spacing:.5px;flex:1}
+.logo img{width:34px;height:34px}
+.ib{min-width:44px;height:44px;border-radius:12px;background:var(--g1);font-weight:700;position:relative}
+.bd{position:absolute;top:-4px;inset-inline-end:-4px;background:var(--o);color:#fff;font-size:11px;border-radius:10px;padding:1px 6px}
+.sb{width:100%;margin-top:10px;height:44px;border-radius:12px;border:1px solid var(--g2);padding:0 14px;font:inherit;background:var(--g1)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 14px}
+.chip{white-space:nowrap;padding:9px 16px;border-radius:20px;background:var(--g1);font-weight:600}
+.chip.on{background:var(--o);color:#fff}
+h2{font-size:19px;margin:18px 14px 10px}
+.hero{margin:6px 14px;padding:22px 18px;border-radius:18px;background:var(--o);color:#fff}
+.hero b{font-size:24px;display:block;margin-bottom:6px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 14px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+.card{cursor:pointer}
+.im{position:relative;aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:64px}
+.tag{position:absolute;top:8px;inset-inline-start:8px;background:var(--o);color:#fff;font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px}
+.tag.out{background:var(--g3)}
+.fv{position:absolute;top:6px;inset-inline-end:6px;width:36px;height:36px;border-radius:50%;background:#fff;color:var(--g2);font-size:18px}
+.fv.on{color:var(--o)}
+.nm{margin-top:8px;font-weight:600;font-size:15px}
+.pr{margin-top:2px}.pr b{color:var(--od)}.pr s{color:var(--g3);font-size:13px}
+.im img,.em img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.note{margin:0 14px;padding:14px;border-radius:12px;background:var(--g1);color:var(--g3);font-size:14px;line-height:1.6}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:none;align-items:flex-end}
+.ov.show{display:flex}
+.sh{background:#fff;width:100%;max-height:90vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px;max-width:640px;margin:auto auto 0}
+.opts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+.op{min-width:44px;height:44px;padding:0 14px;border-radius:12px;border:2px solid var(--g2);font-weight:600}
+.op.on{border-color:var(--o);color:var(--od)}
+.cta{width:100%;height:50px;border-radius:14px;background:var(--o);color:#fff;font-weight:700;font-size:16px}
+.cta:disabled{background:var(--g2);color:var(--g3)}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--g1)}
+.row .em{width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px}
+.q{display:flex;align-items:center;gap:8px}.q button{width:36px;height:36px;border-radius:10px;background:var(--g1);font-weight:700}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:12px;z-index:30;display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="logo"><img src="logo.svg" alt=""><span>HAMDO</span></div>
+    <button class="ib" data-act="lang" id="lb"></button>
+    <button class="ib" data-act="favs" aria-label="favorites">♥<span class="bd" id="fc"></span></button>
+    <button class="ib" data-act="cart" aria-label="cart">🛒<span class="bd" id="cc"></span></button>
+  </div>
+  <input class="sb" id="q" list="dl" autocomplete="off"><datalist id="dl"></datalist>
+</header>
+<div class="chips" id="chips"></div>
+<main id="main"></main>
+<div class="ov" id="ov"><div class="sh" id="sh"></div></div>
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+let CATS=[];
+const COL={black:["#222","أسود","Noir"],white:["#eee","أبيض","Blanc"],orange:["#F46B35","برتقالي","Orange"],gray:["#888","رمادي","Gris"],blue:["#2f6fd0","أزرق","Bleu"]};
+let P=[],st="ld";
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const cn=c=>COL[c]?COL[c][lang==="ar"?1:2]:(c||"");
+const pic=p=>p.img?`<img src="${p.img}" alt="">`:p.emoji;
+const X={ar:{ld:"جارٍ تحميل المنتجات…",es:"المتجر قيد التجهيز، سنضيف المنتجات قريباً.",er:"تعذّر تحميل المنتجات. تحقق من الاتصال وأعد المحاولة."},fr:{ld:"Chargement des produits…",es:"La boutique est en préparation, les produits arrivent bientôt.",er:"Impossible de charger les produits. Vérifiez la connexion et réessayez."}};
+const T={
+ar:{s:"ابحث عن منتج…",all:"الكل",new:"جديدنا",deals:"العروض",best:"الأكثر مبيعاً",bestn:"سيظهر هنا بناءً على المبيعات الفعلية بعد أول الطلبات الحقيقية.",more:"منتجات أخرى",hero:"مرحباً بك في HAMDO",herot:"توصيل مجاني والدفع عند الاستلام",out:"غير متوفر",add:"أضف إلى السلة",added:"أُضيف إلى السلة",cart:"سلة التسوق",empty:"لا توجد منتجات هنا بعد.",total:"المجموع",ship:"التوصيل مجاني",co:"إتمام الطلب",con:"إتمام الطلب سيُفعَّل في المرحلة 4.",color:"اللون",size:"المقاس",stock:"متوفر",low:"كمية محدودة",favs:"المفضلة",none:"لا شيء بعد",close:"إغلاق",pick:"اختر اللون والمقاس",none2:"لا نتائج مطابقة.",lg:"FR",cur:"د.م"},
+fr:{s:"Rechercher un produit…",all:"Tout",new:"Nouveautés",deals:"Promotions",best:"Meilleures ventes",bestn:"Cette section s’affichera d’après les ventes réelles, après les premières commandes.",more:"Autres produits",hero:"Bienvenue chez HAMDO",herot:"Livraison gratuite, paiement à la livraison",out:"Indisponible",add:"Ajouter au panier",added:"Ajouté au panier",cart:"Panier",empty:"Aucun produit pour le moment.",total:"Total",ship:"Livraison gratuite",co:"Commander",con:"La commande sera activée à l’étape 4.",color:"Couleur",size:"Taille",stock:"En stock",low:"Quantité limitée",favs:"Favoris",none:"Rien pour le moment",close:"Fermer",pick:"Choisissez la couleur et la taille",none2:"Aucun résultat.",lg:"عربي",cur:"MAD"}};
+const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let lang=ld("lang","ar"),cart=ld("cart",[]),favs=ld("favs",[]),cat="all",view="home",sel={};
+const t=k=>T[lang][k],m=n=>lang==="ar"?n+" "+t("cur"):n+" "+t("cur");
+const $=s=>document.querySelector(s),pp=id=>P.find(p=>p.id===id),eff=p=>p.sale||p.price;
+const bg=p=>p.id%2?"#fdeee6":"#f1f1f3";
+function card(p){return `<div class="card" data-act="open" data-id="${p.id}"><div class="im" style="background:${bg(p)}">${pic(p)}${p.stock<=0?`<span class="tag out">${t("out")}</span>`:p.sale?`<span class="tag">-${Math.round(100-p.sale/p.price*100)}%</span>`:""}<button class="fv ${favs.includes(p.id)?"on":""}" data-act="fav" data-id="${p.id}" aria-label="fav">♥</button></div><div class="nm">${p[lang]}</div><div class="pr">${p.sale?`<b>${m(p.sale)}</b> <s>${m(p.price)}</s>`:`<b>${m(p.price)}</b>`}</div></div>`}
+const grid=a=>a.length?`<div class="grid">${a.map(card).join("")}</div>`:`<p class="note">${t("empty")}</p>`;
+function render(){
+  const d=document.documentElement;d.lang=lang;d.dir=lang==="ar"?"rtl":"ltr";
+  $("#lb").textContent=t("lg");$("#q").placeholder=t("s");
+  $("#dl").innerHTML=P.map(p=>`<option value="${p[lang]}">`).join("");
+  $("#chips").innerHTML=[{id:"all",ar:T.ar.all,fr:T.fr.all},...CATS].map(c=>`<button class="chip ${cat===c.id?"on":""}" data-act="cat" data-v="${c.id}">${c[lang]}</button>`).join("");
+  $("#fc").textContent=favs.length||"";$("#cc").textContent=cart.reduce((s,i)=>s+i.q,0)||"";
+  const q=$("#q").value.trim().toLowerCase();let list=P.filter(p=>cat==="all"||p.cat===cat);
+  if(view==="favs")list=P.filter(p=>favs.includes(p.id));
+  if(q)list=list.filter(p=>(p.ar+p.fr+p.da+p.df).toLowerCase().includes(q));
+  let h="";
+  if(view==="favs")h=`<h2>${t("favs")}</h2>`+grid(list)+`<p class="note" style="margin-top:12px"><button data-act="home">← ${t("all")}</button></p>`;
+  else if(q||cat!=="all")h=list.length?`<h2>${q?"":CATS.find(c=>c.id===cat)[lang]}</h2>`+grid(list):`<p class="note" style="margin-top:14px">${t("none2")}</p>`;
+  else h=`<div class="hero"><b>${t("hero")}</b>${t("herot")}</div><h2>${t("new")}</h2>`+grid(P.filter(p=>p.isNew))+`<h2>${t("deals")}</h2>`+grid(P.filter(p=>p.sale))+`<h2>${t("best")}</h2><p class="note">${t("bestn")}</p><h2>${t("more")}</h2>`+grid(P);
+  $("#main").innerHTML=st==="ok"&&P.length?h:`<p class="note" style="margin:14px">${X[lang][st==="ok"?"es":st]}</p>`;
+}
+function sheet(h){$("#sh").innerHTML=h;$("#ov").classList.add("show")}
+const closeSheet=()=>$("#ov").classList.remove("show");
+function toast(s){const e=$("#toast");e.textContent=s;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",1800)}
+function openP(id){const p=pp(id);sel={id,c:p.colors[0]||"",s:p.sizes[0]||""};drawP()}
+function drawP(){const p=pp(sel.id),out=p.stock<=0;
+  sheet(`<div class="im" style="background:${bg(p)};font-size:96px;aspect-ratio:16/10">${pic(p)}</div><h2 style="margin:12px 0 4px">${p[lang]}</h2><div class="pr" style="font-size:18px">${p.sale?`<b>${m(p.sale)}</b> <s>${m(p.price)}</s>`:`<b>${m(p.price)}</b>`}</div><p style="margin:8px 0;color:var(--g3)">${lang==="ar"?p.da:p.df}</p><p><b>${out?t("out"):p.stock<=5?t("low"):t("stock")}</b></p>
+  ${p.colors.length?`<p style="margin-top:10px">${t("color")}</p>`:""}<div class="opts">${p.colors.map(c=>`<button class="op ${sel.c===c?"on":""}" data-act="pc" data-v="${c}">${cn(c)}</button>`).join("")}</div>
+  ${p.sizes.length?`<p>${t("size")}</p><div class="opts">${p.sizes.map(s=>`<button class="op ${sel.s===s?"on":""}" data-act="ps" data-v="${s}">${s}</button>`).join("")}</div>`:""}
+  <button class="cta" data-act="add" ${out?"disabled":""}>${out?t("out"):t("add")}</button><button class="cta" style="background:var(--g1);color:var(--tx);margin-top:8px" data-act="close">${t("close")}</button>`)}
+function drawCart(){const rows=cart.map((i,x)=>{const p=pp(i.id);return `<div class="row"><div class="em" style="background:${bg(p)}">${pic(p)}</div><div style="flex:1"><b>${p[lang]}</b><br><small>${cn(i.c)} ${i.s}</small><br>${m(eff(p))}</div><div class="q"><button data-act="dec" data-x="${x}">−</button>${i.q}<button data-act="inc" data-x="${x}">+</button></div></div>`}).join("");
+  const tot=cart.reduce((s,i)=>s+eff(pp(i.id))*i.q,0);
+  sheet(`<h2 style="margin:0 0 6px">${t("cart")}</h2>${rows||`<p class="note">${t("none")}</p>`}<p style="margin:12px 0"><b>${t("total")}: ${m(tot)}</b><br><small>${t("ship")}</small></p><button class="cta" disabled>${t("co")}</button><p class="note" style="margin:8px 0">${t("con")}</p><button class="cta" style="background:var(--g1);color:var(--tx)" data-act="close">${t("close")}</button>`)}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b){if(e.target.id==="ov")closeSheet();return}
+  const a=b.dataset.act,id=+b.dataset.id,x=+b.dataset.x;
+  if(a==="lang"){lang=lang==="ar"?"fr":"ar";sv("lang",lang);render()}
+  else if(a==="cat"){cat=b.dataset.v==="all"?"all":+b.dataset.v;view="home";render()}
+  else if(a==="home"){view="home";render()}
+  else if(a==="favs"){view="favs";render()}
+  else if(a==="fav"){favs=favs.includes(id)?favs.filter(f=>f!==id):[...favs,id];sv("favs",favs);render()}
+  else if(a==="open")openP(id);
+  else if(a==="pc"){sel.c=b.dataset.v;drawP()}
+  else if(a==="ps"){sel.s=b.dataset.v;drawP()}
+  else if(a==="add"){const f=cart.find(i=>i.id===sel.id&&i.c===sel.c&&i.s===sel.s);f?f.q++:cart.push({id:sel.id,c:sel.c,s:sel.s,q:1});sv("cart",cart);closeSheet();render();toast(t("added"))}
+  else if(a==="cart")drawCart();
+  else if(a==="inc"){cart[x].q++;sv("cart",cart);drawCart();render()}
+  else if(a==="dec"){cart[x].q--;if(cart[x].q<=0)cart.splice(x,1);sv("cart",cart);drawCart();render()}
+  else if(a==="close")closeSheet();
+});
+async function load(){
+  render();
+  try{
+    const H={headers:{apikey:HAMDO.key}},B=HAMDO.url+"/rest/v1/";
+    const [c,p]=await Promise.all([fetch(B+"categories?select=*&active=eq.true&order=sort,id",H),fetch(B+"products?select=*,variants(*)&active=eq.true&order=created_at.desc",H)]);
+    if(!c.ok||!p.ok)throw 0;
+    CATS=(await c.json()).map(x=>({id:x.id,ar:esc(x.name_ar),fr:esc(x.name_fr)}));
+    const now=Date.now();
+    P=(await p.json()).map(x=>{const v=x.variants||[];
+      const sale=x.sale_price!=null&&(!x.sale_start||Date.parse(x.sale_start)<=now)&&(!x.sale_end||Date.parse(x.sale_end)>=now)?+x.sale_price:0;
+      const im=(x.images||[]).find(u=>/^https:\/\//.test(u));
+      return{id:x.id,cat:x.category_id,ar:esc(x.name_ar),fr:esc(x.name_fr),da:esc(x.desc_ar),df:esc(x.desc_fr),price:+x.price,sale:sale||undefined,img:im?esc(im):"",emoji:"🛍️",
+        colors:[...new Set(v.map(y=>y.color).filter(Boolean))].map(esc),sizes:[...new Set(v.map(y=>y.size).filter(Boolean))].map(esc),
+        stock:v.reduce((s,y)=>s+Math.max(0,y.stock-y.reserved),0),isNew:x.is_new}});
+    cart=cart.filter(i=>pp(i.id));sv("cart",cart);st="ok";
+  }catch(e){st="er"}
+  render();
+}
+$("#q").addEventListener("input",()=>{view="home";render()});
+load();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>

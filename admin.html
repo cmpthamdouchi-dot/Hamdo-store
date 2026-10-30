@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>HAMDO — الإدارة</title>
+<style>
+:root{--o:#F46B35;--g1:#f4f4f5;--g2:#e2e2e5;--g3:#6b6b73}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,Tahoma,Arial,sans-serif;background:var(--g1);padding:12px 12px 70px;color:#222}
+.c{background:#fff;border-radius:14px;padding:14px;margin:0 auto 12px;max-width:680px}
+input,textarea,select,button{font:inherit;width:100%;padding:11px;border:1px solid var(--g2);border-radius:10px;margin:4px 0 10px;background:#fff}
+textarea{min-height:76px}
+button{background:var(--o);color:#fff;border:0;font-weight:700;cursor:pointer;margin:0}
+button.s{background:var(--g1);color:#222}button.d{background:#c0392b}button:disabled{opacity:.5}
+.tabs{display:flex;gap:8px;max-width:680px;margin:0 auto 12px}.tabs button{background:#fff;color:#222}.tabs .on{background:var(--o);color:#fff}
+.r{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--g1)}.r span{flex:1}.r button{width:auto;padding:8px 12px}
+label{font-size:14px;color:var(--g3)}.ck{display:flex;gap:8px;align-items:center;margin-bottom:10px}.ck input{width:auto;margin:0}
+small{color:var(--g3)}
+#m{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;display:none;max-width:90%;z-index:9}
+</style>
+</head>
+<body>
+<div id="app"></div><div id="m"></div>
+<script>
+// إعدادات عامة فقط (Project URL + Publishable key). ممنوع وضع service_role أو أي سر هنا.
+const HAMDO={url:"https://qkjarvcefzllkfogewqr.supabase.co",key:"sb_publishable_f27DGvJ2RVdZR7nUp_oGjA_znpHay0A"};
+const U=HAMDO.url,K=HAMDO.key,$=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let S=null;try{S=JSON.parse(localStorage.getItem("hs"))}catch(e){}
+const sv=s=>{S=s;try{s?localStorage.setItem("hs",JSON.stringify(s)):localStorage.removeItem("hs")}catch(e){}};
+let tab="p",cats=[],prods=[],ed=null,form=false;
+function msg(t){const m=$("#m");m.textContent=t;m.style.display="block";clearTimeout(msg.t);msg.t=setTimeout(()=>m.style.display="none",4000)}
+async function auth(path,body){const r=await fetch(U+"/auth/v1/"+path,{method:"POST",headers:{apikey:K,"Content-Type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw new Error(j.error_description||j.msg||"خطأ "+r.status);return j}
+async function api(path,opt={},retry=true){
+  const r=await fetch(U+"/rest/v1/"+path,{...opt,headers:{apikey:K,Authorization:"Bearer "+S.access_token,"Content-Type":"application/json",...(opt.headers||{})}});
+  if(r.status===401&&retry&&S.refresh_token){try{sv(await auth("token?grant_type=refresh_token",{refresh_token:S.refresh_token}))}catch(e){sv(null);draw();throw new Error("انتهت الجلسة، سجّل الدخول من جديد")}return api(path,opt,false)}
+  const t=await r.text(),j=t?JSON.parse(t):null;if(!r.ok)throw new Error((j&&j.message)||"خطأ "+r.status);return j}
+async function boot(){
+  if(!S){draw();return}
+  try{const a=await api("admins?select=user_id");if(!a.length){msg("هذا الحساب ليس مديراً");sv(null);draw();return}await load()}
+  catch(e){msg(e.message);draw()}}
+async function load(){[cats,prods]=await Promise.all([api("categories?select=*&order=sort,id"),api("products?select=*,variants(*)&order=created_at.desc")]);draw()}
+const stk=p=>(p.variants||[]).reduce((s,v)=>s+v.stock,0);
+const loc=v=>{if(!v)return"";const d=new Date(v);return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,16)};
+const dt=v=>v?new Date(v).toISOString():null;
+function draw(){
+  if(!S){$("#app").innerHTML=`<div class="c"><h2 style="margin-bottom:10px">HAMDO — دخول المدير</h2><label>البريد</label><input id="em" type="email" autocomplete="username"><label>كلمة السر</label><input id="pw" type="password" autocomplete="current-password"><button data-a="in">دخول</button></div>`;return}
+  $("#app").innerHTML=`<div class="tabs"><button class="${tab==="p"?"on":""}" data-a="tab" data-v="p">المنتجات</button><button class="${tab==="c"?"on":""}" data-a="tab" data-v="c">الأقسام</button><button class="s" data-a="out">خروج</button></div>`+(tab==="c"?catsHtml():form?formHtml():prodsHtml())}
+const catsHtml=()=>`<div class="c"><h3>قسم جديد</h3><label>الاسم بالعربية</label><input id="ca"><label>Nom en français</label><input id="cf"><label>الترتيب (رقم)</label><input id="cs" type="number" value="0"><button data-a="addc">إضافة</button></div><div class="c">${cats.map(c=>`<div class="r"><span>${esc(c.name_ar)} / ${esc(c.name_fr)} ${c.active?"":"<small>(مخفي)</small>"}</span><button class="s" data-a="tc" data-id="${c.id}">${c.active?"إخفاء":"إظهار"}</button><button class="d" data-a="dc" data-id="${c.id}">حذف</button></div>`).join("")||"لا أقسام بعد"}</div>`;
+const prodsHtml=()=>`<div class="c"><button data-a="newp">+ منتج جديد</button></div><div class="c">${prods.map(p=>`<div class="r"><span>${esc(p.name_ar)}<br><small>${p.price} MAD · المخزون ${stk(p)} ${p.active?"":"· مخفي"}</small></span><button class="s" data-a="ep" data-id="${p.id}">تعديل</button></div>`).join("")||"لا منتجات بعد"}</div>`;
+function formHtml(){const p=ed||{},v=x=>esc(x??"");
+  return `<div class="c"><h3>${ed?"تعديل منتج":"منتج جديد"}</h3>
+<label>الاسم بالعربية *</label><input id="f_ar" value="${v(p.name_ar)}"><label>Nom en français *</label><input id="f_fr" value="${v(p.name_fr)}">
+<label>الوصف بالعربية</label><textarea id="f_da">${v(p.desc_ar)}</textarea><label>Description en français</label><textarea id="f_df">${v(p.desc_fr)}</textarea>
+<label>الثمن (درهم) *</label><input id="f_pr" type="number" step="0.01" min="0" value="${v(p.price)}">
+<label>الثمن المخفض (اختياري)</label><input id="f_sp" type="number" step="0.01" min="0" value="${v(p.sale_price)}">
+<label>بداية التخفيض</label><input id="f_ss" type="datetime-local" value="${loc(p.sale_start)}"><label>نهاية التخفيض</label><input id="f_se" type="datetime-local" value="${loc(p.sale_end)}">
+<label>روابط الصور (https، رابط في كل سطر)</label><textarea id="f_im">${v((p.images||[]).join("\n"))}</textarea>
+<label>القسم</label><select id="f_ct"><option value="">بدون قسم</option>${cats.map(c=>`<option value="${c.id}" ${p.category_id===c.id?"selected":""}>${esc(c.name_ar)}</option>`).join("")}</select>
+<label>المخزون: سطر لكل متغير بالشكل لون,مقاس,كمية — مثال: black,M,5 — وبدون ألوان ومقاسات: ,,10</label><textarea id="f_vr">${v((p.variants||[]).map(x=>[x.color,x.size,x.stock].join(",")).join("\n"))}</textarea>
+<div class="ck"><input id="f_nw" type="checkbox" ${p.is_new?"checked":""}><label>منتج جديد</label></div>
+<div class="ck"><input id="f_ac" type="checkbox" ${ed?(p.active?"checked":""):"checked"}><label>ظاهر في المتجر</label></div>
+<button data-a="savep">حفظ</button><button class="s" style="margin-top:8px" data-a="cancel">إلغاء</button></div>`}
+async function saveP(){
+  const g=id=>$("#"+id).value.trim(),n=g("f_ar"),f=g("f_fr"),pr=g("f_pr");
+  if(!n||!f||pr===""||+pr<0)throw new Error("أكمل الاسمين والثمن");
+  const sp=g("f_sp"),body={name_ar:n,name_fr:f,desc_ar:g("f_da"),desc_fr:g("f_df"),price:+pr,sale_price:sp===""?null:+sp,sale_start:dt(g("f_ss")),sale_end:dt(g("f_se")),
+    images:g("f_im").split("\n").map(s=>s.trim()).filter(s=>/^https:\/\//.test(s)),category_id:g("f_ct")?+g("f_ct"):null,is_new:$("#f_nw").checked,active:$("#f_ac").checked};
+  const vars=g("f_vr").split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const a=l.split(",").map(s=>s.trim());return{color:a[0]||"",size:a[1]||"",stock:Math.max(0,parseInt(a[2])||0)}});
+  let id;
+  if(ed){id=ed.id;await api("products?id=eq."+id,{method:"PATCH",body:JSON.stringify(body),headers:{Prefer:"return=minimal"}});await api("variants?product_id=eq."+id,{method:"DELETE"})}
+  else{id=(await api("products",{method:"POST",body:JSON.stringify(body),headers:{Prefer:"return=representation"}}))[0].id}
+  if(vars.length)await api("variants",{method:"POST",body:JSON.stringify(vars.map(x=>({...x,product_id:id}))),headers:{Prefer:"return=minimal"}});
+  form=false;ed=null;await load();msg("تم الحفظ")}
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,id=+b.dataset.id;b.disabled=true;
+  try{
+    if(a==="in"){sv(await auth("token?grant_type=password",{email:$("#em").value.trim(),password:$("#pw").value}));await boot()}
+    else if(a==="out"){sv(null);draw()}
+    else if(a==="tab"){tab=b.dataset.v;form=false;ed=null;draw()}
+    else if(a==="addc"){const x=$("#ca").value.trim(),y=$("#cf").value.trim();if(!x||!y)throw new Error("أدخل الاسمين");await api("categories",{method:"POST",body:JSON.stringify({name_ar:x,name_fr:y,sort:+$("#cs").value||0}),headers:{Prefer:"return=minimal"}});await load();msg("أُضيف القسم")}
+    else if(a==="tc"){const c=cats.find(c=>c.id===id);await api("categories?id=eq."+id,{method:"PATCH",body:JSON.stringify({active:!c.active}),headers:{Prefer:"return=minimal"}});await load()}
+    else if(a==="dc"){if(confirm("حذف هذا القسم؟ منتجاته تبقى دون قسم.")){await api("categories?id=eq."+id,{method:"DELETE"});await load()}}
+    else if(a==="newp"){ed=null;form=true;draw()}
+    else if(a==="ep"){ed=prods.find(p=>p.id===id);form=true;draw()}
+    else if(a==="cancel"){form=false;ed=null;draw()}
+    else if(a==="savep")await saveP();
+  }catch(x){msg(x.message)}finally{b.disabled=false}});
+boot();
+</script>
+</body>
+</html>
