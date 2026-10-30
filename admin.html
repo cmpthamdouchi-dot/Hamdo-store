@@ -31,7 +31,7 @@ const U=HAMDO.url,K=HAMDO.key,$=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let S=null;try{S=JSON.parse(localStorage.getItem("hs"))}catch(e){}
 const sv=s=>{S=s;try{s?localStorage.setItem("hs",JSON.stringify(s)):localStorage.removeItem("hs")}catch(e){}};
-let tab="p",cats=[],prods=[],ed=null,form=false;
+let tab="p",cats=[],prods=[],orders=[],ed=null,form=false;
 function msg(t){const m=$("#m");m.textContent=t;m.style.display="block";clearTimeout(msg.t);msg.t=setTimeout(()=>m.style.display="none",4000)}
 async function auth(path,body){const r=await fetch(U+"/auth/v1/"+path,{method:"POST",headers:{apikey:K,"Content-Type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw new Error(j.error_description||j.msg||"خطأ "+r.status);return j}
 async function api(path,opt={},retry=true){
@@ -42,15 +42,15 @@ async function boot(){
   if(!S){draw();return}
   try{const a=await api("admins?select=user_id");if(!a.length){msg("هذا الحساب ليس مديراً");sv(null);draw();return}await load()}
   catch(e){msg(e.message);draw()}}
-async function load(){[cats,prods]=await Promise.all([api("categories?select=*&order=sort,id"),api("products?select=*,variants(*)&order=created_at.desc")]);draw()}
+async function load(){[cats,prods,orders]=await Promise.all([api("categories?select=*&order=sort,id"),api("products?select=*,variants(*)&order=created_at.desc"),api("orders?select=*,order_items(*)&order=created_at.desc")]);draw()}
 const stk=p=>(p.variants||[]).reduce((s,v)=>s+v.stock,0);
 const loc=v=>{if(!v)return"";const d=new Date(v);return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,16)};
 const dt=v=>v?new Date(v).toISOString():null;
 function draw(){
   if(!S){$("#app").innerHTML=`<div class="c"><h2 style="margin-bottom:10px">HAMDO — دخول المدير</h2><label>البريد</label><input id="em" type="email" autocomplete="username"><label>كلمة السر</label><input id="pw" type="password" autocomplete="current-password"><button data-a="in">دخول</button></div>`;return}
-  $("#app").innerHTML=`<div class="tabs"><button class="${tab==="p"?"on":""}" data-a="tab" data-v="p">المنتجات</button><button class="${tab==="c"?"on":""}" data-a="tab" data-v="c">الأقسام</button><button class="s" data-a="out">خروج</button></div>`+(tab==="c"?catsHtml():form?formHtml():prodsHtml())}
+  $("#app").innerHTML=`<div class="tabs"><button class="${tab==="p"?"on":""}" data-a="tab" data-v="p">المنتجات</button><button class="${tab==="c"?"on":""}" data-a="tab" data-v="c">الأقسام</button><button class="${tab==="o"?"on":""}" data-a="tab" data-v="o">الطلبات (${orders.length})</button><button class="s" data-a="out">خروج</button></div>`+(tab==="c"?catsHtml():tab==="o"?ordersHtml():form?formHtml():prodsHtml())}
 const catsHtml=()=>`<div class="c"><h3>قسم جديد</h3><label>الاسم بالعربية</label><input id="ca"><label>Nom en français</label><input id="cf"><label>القسم الرئيسي (اختياري)</label><select id="cp"><option value="">قسم رئيسي</option>${cats.filter(c=>!c.parent_id).map(c=>`<option value="${c.id}">${esc(c.name_ar)} / ${esc(c.name_fr)}</option>`).join("")}</select><label>الترتيب (رقم)</label><input id="cs" type="number" value="0"><button data-a="addc">إضافة</button></div><div class="c">${cats.map(c=>`<div class="r"><span>${c.parent_id?"↳ ":""}${esc(c.name_ar)} / ${esc(c.name_fr)} ${c.active?"":"<small>(مخفي)</small>"}</span><button class="s" data-a="tc" data-id="${c.id}">${c.active?"إخفاء":"إظهار"}</button><button class="d" data-a="dc" data-id="${c.id}">حذف</button></div>`).join("")||"لا أقسام بعد"}</div>`;
-const prodsHtml=()=>`<div class="c"><button data-a="newp">+ منتج جديد</button></div><div class="c">${prods.map(p=>`<div class="r"><span>${esc(p.name_ar)}<br><small>${p.price} MAD · المخزون ${stk(p)} ${p.active?"":"· مخفي"}</small></span><button class="s" data-a="ep" data-id="${p.id}">تعديل</button></div>`).join("")||"لا منتجات بعد"}</div>`;
+const ordersHtml=()=>`<div class="c"><h3>طلبات الزبائن</h3>${orders.length?orders.map(o=>`<div style="padding:12px 0;border-bottom:1px solid var(--g2)"><b>${esc(o.order_number)}</b> · ${new Date(o.created_at).toLocaleString("fr-MA")}<p style="margin:6px 0">${esc(o.customer_name)} · <a href="tel:${esc(o.phone)}">${esc(o.phone)}</a><br>${esc(o.city)} — ${esc(o.address)}</p><small>${(o.order_items||[]).map(i=>esc(i.product_name_ar)+" · "+esc(i.color)+" · "+esc(i.size)+" × "+i.quantity+" = "+i.line_total+" DH").join("<br>")}</small><p style="margin:8px 0"><b>${o.total} DH</b> · التوصيل مجاني · الأداء عند الاستلام</p><label>حالة الطلب</label><select data-order-status="${o.id}"><option value="new" ${o.status==="new"?"selected":""}>جديد</option><option value="confirmed" ${o.status==="confirmed"?"selected":""}>مؤكد</option><option value="shipped" ${o.status==="shipped"?"selected":""}>تم الإرسال</option><option value="delivered" ${o.status==="delivered"?"selected":""}>تم التسليم</option><option value="cancelled" ${o.status==="cancelled"?"selected":""}>ملغى</option><option value="refused" ${o.status==="refused"?"selected":""}>رفض الاستلام</option></select><button data-a="status" data-id="${o.id}">حفظ الحالة</button></div>`).join(""):"لا توجد طلبات بعد."}</div>`;\nconst prodsHtml=()=>`<div class="c"><button data-a="newp">+ منتج جديد</button></div><div class="c">${prods.map(p=>`<div class="r"><span>${esc(p.name_ar)}<br><small>${p.price} MAD · المخزون ${stk(p)} ${p.active?"":"· مخفي"}</small></span><button class="s" data-a="ep" data-id="${p.id}">تعديل</button></div>`).join("")||"لا منتجات بعد"}</div>`;
 function formHtml(){const p=ed||{},v=x=>esc(x??"");
   return `<div class="c"><h3>${ed?"تعديل منتج":"منتج جديد"}</h3>
 <label>الاسم بالعربية *</label><input id="f_ar" value="${v(p.name_ar??(ed===null?"طقم نسائي مخطط من قطعتين":""))}"><label>Nom en français *</label><input id="f_fr" value="${v(p.name_fr??(ed===null?"Ensemble femme deux pièces à rayures":""))}">
@@ -80,7 +80,7 @@ document.addEventListener("click",async e=>{
   try{
     if(a==="in"){sv(await auth("token?grant_type=password",{email:$("#em").value.trim(),password:$("#pw").value}));await boot()}
     else if(a==="out"){sv(null);draw()}
-    else if(a==="tab"){tab=b.dataset.v;form=false;ed=null;draw()}
+    else if(a==="tab"){tab=b.dataset.v;form=false;ed=null;draw()}\n    else if(a==="status"){const st=document.querySelector(`[data-order-status="${id}"]`).value;await api("orders?id=eq."+id,{method:"PATCH",body:JSON.stringify({status:st}),headers:{Prefer:"return=minimal"}});await load();msg("تم تحديث حالة الطلب")}
     else if(a==="addc"){const x=$("#ca").value.trim(),y=$("#cf").value.trim();if(!x||!y)throw new Error("أدخل الاسمين");await api("categories",{method:"POST",body:JSON.stringify({name_ar:x,name_fr:y,sort:+$("#cs").value||0,parent_id:$("#cp").value?+$("#cp").value:null}),headers:{Prefer:"return=minimal"}});await load();msg("أُضيف القسم")}
     else if(a==="tc"){const c=cats.find(c=>c.id===id);await api("categories?id=eq."+id,{method:"PATCH",body:JSON.stringify({active:!c.active}),headers:{Prefer:"return=minimal"}});await load()}
     else if(a==="dc"){if(confirm("حذف هذا القسم؟ منتجاته تبقى دون قسم.")){await api("categories?id=eq."+id,{method:"DELETE"});await load()}}
