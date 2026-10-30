@@ -57,7 +57,7 @@ function formHtml(){const p=ed||{},v=x=>esc(x??"");
 <label>الثمن (درهم) *</label><input id="f_pr" type="number" step="0.01" min="0" value="${v(p.price??(ed===null?280:""))}">
 <label>الثمن المخفض (اختياري)</label><input id="f_sp" type="number" step="0.01" min="0" value="${v(p.sale_price)}">
 <label>بداية التخفيض</label><input id="f_ss" type="datetime-local" value="${loc(p.sale_start)}"><label>نهاية التخفيض</label><input id="f_se" type="datetime-local" value="${loc(p.sale_end)}">
-<label>روابط الصور (https، رابط في كل سطر)</label><textarea id="f_im">${v((p.images||[]).join("\n"))}</textarea>
+<label>رفع صور المنتج (ملف ZIP للصور الأصلية)</label><input id="f_zip" type="file" accept=".zip,application/zip"><button type="button" class="s" data-a="upzip">رفع الصور وربطها بالمنتج</button><small id="upmsg">اختَر ملف ZIP الذي يحتوي صور المنتج. الصور ستُرفع كما هي.</small><label>روابط الصور (https، رابط في كل سطر)</label><textarea id="f_im">${v((p.images||[]).join("\n"))}</textarea>
 <label>القسم</label><select id="f_ct"><option value="">بدون قسم</option>${cats.map(c=>`<option value="${c.id}" ${p.category_id===c.id?"selected":""}>${esc(c.name_ar)}</option>`).join("")}</select>
 <label>المخزون: سطر لكل متغير بالشكل لون,مقاس,كمية</label><textarea id="f_vr">${v((p.variants||[]).map(x=>[x.color,x.size,x.stock].join(",")).join("\n")||(ed===null?["White","Teal","Black","Grey","Pink","Grouna","Brown","Argile"].map(c=>c+",Standard,60").join("\n"):""))}</textarea>
 <div class="ck"><input id="f_nw" type="checkbox" ${p.is_new?"checked":""}><label>منتج جديد</label></div>
@@ -86,9 +86,34 @@ document.addEventListener("click",async e=>{
     else if(a==="newp"){ed=null;form=true;draw()}
     else if(a==="ep"){ed=prods.find(p=>p.id===id);form=true;draw()}
     else if(a==="cancel"){form=false;ed=null;draw()}
-    else if(a==="savep")await saveP();
+    else if(a==="savep")await saveP();\n    else if(a==="upzip")await uploadZip();
   }catch(x){msg(x.message)}finally{b.disabled=false}});
 boot();
-</script>
+
+async function uploadZip(){
+ const file=$("#f_zip").files[0]; if(!file) throw new Error("اختَر ملف ZIP أولاً");
+ if(!ed) throw new Error("احفظ المنتج أولاً ثم افتحه للتعديل قبل رفع الصور");
+ if(!window.JSZip) throw new Error("تعذر تحميل أداة قراءة ZIP. أعد تحميل الصفحة وحاول مجدداً");
+ $("#upmsg").textContent="جارٍ تجهيز الصور...";
+ const zip=await JSZip.loadAsync(file), names=Object.keys(zip.files).filter(n=>!zip.files[n].dir && /\\.(jpe?g|png|webp)$/i.test(n)).sort();
+ if(!names.length) throw new Error("لم أجد صوراً داخل ملف ZIP");
+ const urls=[];
+ for(let i=0;i<names.length;i++){
+   const entry=zip.files[names[i]], blob=await entry.async("blob");
+   const ext=(names[i].split(".").pop()||"jpg").toLowerCase(), mime=ext==="png"?"image/png":ext==="webp"?"image/webp":"image/jpeg";
+   const path=ed.id+"/"+String(i+1).padStart(2,"0")+"."+ext;
+   const res=await fetch(U+"/storage/v1/object/product-images/"+path,{method:"POST",headers:{apikey:K,Authorization:"Bearer "+S.access_token,"Content-Type":mime,"x-upsert":"true"},body:blob});
+   if(!res.ok){const t=await res.text();throw new Error("فشل رفع الصورة "+(i+1)+": "+t)}
+   urls.push(U+"/storage/v1/object/public/product-images/"+path);
+   $("#upmsg").textContent="تم رفع "+(i+1)+" من "+names.length;
+ }
+ await api("products?id=eq."+ed.id,{method:"PATCH",body:JSON.stringify({images:urls}),headers:{Prefer:"return=minimal"}});
+ $("#f_im").value=urls.join("\\n");
+ $("#upmsg").textContent="تم رفع وربط "+urls.length+" صورة بنجاح";
+ msg("تم رفع الصور وربطها بالمنتج");
+ await load(); ed=prods.find(p=>p.id===ed.id); form=true; draw();
+}
+document.addEventListener("change",e=>{if(e.target.id==="f_zip"){const m=$("#upmsg");if(m)m.textContent=e.target.files[0]?.name||"اختَر ملف ZIP";}});
+
 </body>
 </html>
