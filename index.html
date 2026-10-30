@@ -130,7 +130,11 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
   else if(a==="pi"){sel.img=+b.dataset.v;drawP()}
   else if(a==="pc"){sel.c=b.dataset.v;drawP()}
   else if(a==="ps"){sel.s=b.dataset.v;drawP()}
-  else if(a==="add"){const f=cart.find(i=>i.id===sel.id&&i.c===sel.c&&i.s===sel.s);f?f.q+=sel.q||1:cart.push({id:sel.id,c:sel.c,s:sel.s,q:sel.q||1});sv("cart",cart);closeSheet();render();toast(t("added"))}\n  else if(a==="buy"){checkoutItems([{id:sel.id,c:sel.c,s:sel.s,q:sel.q||1}],false)}\n  else if(a==="checkout"){checkoutItems(cart,true)}\n  else if(a==="qtyplus"){sel.q=Math.min(99,(sel.q||1)+1);$("#buyqty").textContent=sel.q}\n  else if(a==="qtyminus"){sel.q=Math.max(1,(sel.q||1)-1);$("#buyqty").textContent=sel.q}
+  else if(a==="add"){const f=cart.find(i=>i.id===sel.id&&i.c===sel.c&&i.s===sel.s);f?f.q+=sel.q||1:cart.push({id:sel.id,c:sel.c,s:sel.s,q:sel.q||1});sv("cart",cart);closeSheet();render();toast(t("added"))}
+  else if(a==="buy"){checkoutItems([{id:sel.id,c:sel.c,s:sel.s,q:sel.q||1}],false)}
+  else if(a==="checkout"){checkoutItems(cart,true)}
+  else if(a==="qtyplus"){sel.q=Math.min(99,(sel.q||1)+1);$("#buyqty").textContent=sel.q}
+  else if(a==="qtyminus"){sel.q=Math.max(1,(sel.q||1)-1);$("#buyqty").textContent=sel.q}
   else if(a==="cart")drawCart();
   else if(a==="inc"){cart[x].q++;sv("cart",cart);drawCart();render()}
   else if(a==="dec"){cart[x].q--;if(cart[x].q<=0)cart.splice(x,1);sv("cart",cart);drawCart();render()}
