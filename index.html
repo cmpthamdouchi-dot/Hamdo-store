@@ -36,6 +36,7 @@ h2{font-size:19px;margin:18px 14px 10px}
 .nm{margin-top:8px;font-weight:600;font-size:15px}
 .pr{margin-top:2px}.pr b{color:var(--od)}.pr s{color:var(--g3);font-size:13px}
 .im img,.em img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.gallery{display:flex;gap:8px;overflow-x:auto;padding:8px 2px;direction:ltr}.gallery button{flex:0 0 66px;height:66px;border:2px solid var(--g2);border-radius:9px;overflow:hidden;padding:0}.gallery button.on{border-color:var(--o)}.gallery img{width:100%;height:100%;object-fit:cover}.desc{margin:8px 0;color:var(--g3);white-space:pre-line;line-height:1.7}
 .note{margin:0 14px;padding:14px;border-radius:12px;background:var(--g1);color:var(--g3);font-size:14px;line-height:1.6}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:none;align-items:flex-end}
 .ov.show{display:flex}
@@ -104,8 +105,8 @@ function sheet(h){$("#sh").innerHTML=h;$("#ov").classList.add("show")}
 const closeSheet=()=>$("#ov").classList.remove("show");
 function toast(s){const e=$("#toast");e.textContent=s;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",1800)}
 function openP(id){const p=pp(id);sel={id,c:p.colors[0]||"",s:p.sizes[0]||""};drawP()}
-function drawP(){const p=pp(sel.id),out=p.stock<=0;
-  sheet(`<div class="im" style="background:${bg(p)};font-size:96px;aspect-ratio:16/10">${pic(p)}</div><h2 style="margin:12px 0 4px">${p[lang]}</h2><div class="pr" style="font-size:18px">${p.sale?`<b>${m(p.sale)}</b> <s>${m(p.price)}</s>`:`<b>${m(p.price)}</b>`}</div><p style="margin:8px 0;color:var(--g3)">${lang==="ar"?p.da:p.df}</p><p><b>${out?t("out"):p.stock<=5?t("low"):t("stock")}</b></p>
+function drawP(){const p=pp(sel.id),out=p.stock<=0,images=p.images||[],activeImage=images[sel.img||0]||p.img;
+  sheet(`<div class="im" style="background:${bg(p)};font-size:96px;aspect-ratio:16/10">${activeImage?`<img src="${activeImage}" alt="${p[lang]}">`:p.emoji}</div>${images.length>1?`<div class="gallery">${images.map((u,i)=>`<button class="${(sel.img||0)===i?"on":""}" data-act="pi" data-v="${i}"><img src="${u}" alt=""></button>`).join("")}</div>`:""}<h2 style="margin:12px 0 4px">${p[lang]}</h2><div class="pr" style="font-size:18px">${p.sale?`<b>${m(p.sale)}</b> <s>${m(p.price)}</s>`:`<b>${m(p.price)}</b>`}</div><p class="desc">${lang==="ar"?p.da:p.df}</p><p><b>${out?t("out"):p.stock<=5?t("low"):t("stock")}</b></p>
   ${p.colors.length?`<p style="margin-top:10px">${t("color")}</p>`:""}<div class="opts">${p.colors.map(c=>`<button class="op ${sel.c===c?"on":""}" data-act="pc" data-v="${c}">${cn(c)}</button>`).join("")}</div>
   ${p.sizes.length?`<p>${t("size")}</p><div class="opts">${p.sizes.map(s=>`<button class="op ${sel.s===s?"on":""}" data-act="ps" data-v="${s}">${s}</button>`).join("")}</div>`:""}
   <button class="cta" data-act="add" ${out?"disabled":""}>${out?t("out"):t("add")}</button><button class="cta" style="background:var(--g1);color:var(--tx);margin-top:8px" data-act="close">${t("close")}</button>`)}
@@ -120,6 +121,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
   else if(a==="favs"){view="favs";render()}
   else if(a==="fav"){favs=favs.includes(id)?favs.filter(f=>f!==id):[...favs,id];sv("favs",favs);render()}
   else if(a==="open")openP(id);
+  else if(a==="pi"){sel.img=+b.dataset.v;drawP()}
   else if(a==="pc"){sel.c=b.dataset.v;drawP()}
   else if(a==="ps"){sel.s=b.dataset.v;drawP()}
   else if(a==="add"){const f=cart.find(i=>i.id===sel.id&&i.c===sel.c&&i.s===sel.s);f?f.q++:cart.push({id:sel.id,c:sel.c,s:sel.s,q:1});sv("cart",cart);closeSheet();render();toast(t("added"))}
@@ -138,8 +140,8 @@ async function load(){
     const now=Date.now();
     P=(await p.json()).map(x=>{const v=x.variants||[];
       const sale=x.sale_price!=null&&(!x.sale_start||Date.parse(x.sale_start)<=now)&&(!x.sale_end||Date.parse(x.sale_end)>=now)?+x.sale_price:0;
-      const im=(x.images||[]).find(u=>/^https:\/\//.test(u));
-      return{id:x.id,cat:x.category_id,ar:esc(x.name_ar),fr:esc(x.name_fr),da:esc(x.desc_ar),df:esc(x.desc_fr),price:+x.price,sale:sale||undefined,img:im?esc(im):"",emoji:"🛍️",
+      const images=(x.images||[]).filter(u=>/^https:\/\//.test(u)).map(esc),im=images[0]||"";
+      return{id:x.id,cat:x.category_id,ar:esc(x.name_ar),fr:esc(x.name_fr),da:esc(x.desc_ar).replace(/\\n/g,"\n"),df:esc(x.desc_fr).replace(/\\n/g,"\n"),price:+x.price,sale:sale||undefined,img:im,images,emoji:"🛍️",
         colors:[...new Set(v.map(y=>y.color).filter(Boolean))].map(esc),sizes:[...new Set(v.map(y=>y.size).filter(Boolean))].map(esc),
         stock:v.reduce((s,y)=>s+Math.max(0,y.stock-y.reserved),0),isNew:x.is_new}});
     cart=cart.filter(i=>pp(i.id));sv("cart",cart);st="ok";
