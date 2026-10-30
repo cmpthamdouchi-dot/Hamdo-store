@@ -52,16 +52,16 @@ const catsHtml=()=>`<div class="c"><h3>قسم جديد</h3><label>الاسم ب�
 const prodsHtml=()=>`<div class="c"><button data-a="newp">+ منتج جديد</button></div><div class="c">${prods.map(p=>`<div class="r"><span>${esc(p.name_ar)}<br><small>${p.price} MAD · المخزون ${stk(p)} ${p.active?"":"· مخفي"}</small></span><button class="s" data-a="ep" data-id="${p.id}">تعديل</button></div>`).join("")||"لا منتجات بعد"}</div>`;
 function formHtml(){const p=ed||{},v=x=>esc(x??"");
   return `<div class="c"><h3>${ed?"تعديل منتج":"منتج جديد"}</h3>
-<label>الاسم بالعربية *</label><input id="f_ar" value="${v(p.name_ar)}"><label>Nom en français *</label><input id="f_fr" value="${v(p.name_fr)}">
-<label>الوصف بالعربية</label><textarea id="f_da">${v(p.desc_ar)}</textarea><label>Description en français</label><textarea id="f_df">${v(p.desc_fr)}</textarea>
-<label>الثمن (درهم) *</label><input id="f_pr" type="number" step="0.01" min="0" value="${v(p.price)}">
+<label>الاسم بالعربية *</label><input id="f_ar" value="${v(p.name_ar??(ed===null?"طقم نسائي مخطط من قطعتين":""))}"><label>Nom en français *</label><input id="f_fr" value="${v(p.name_fr??(ed===null?"Ensemble femme deux pièces à rayures":""))}">
+<label>الوصف بالعربية</label><textarea id="f_da">${v(p.desc_ar??(ed===null?"😍 الأناقة اللي كتقلبي عليها وصلاتك!\nطقم نسائي من قطعتين بتصميم مخطط وأزرار أنيقة، كيجمع بين الإطلالة المرتبة والراحة.\n✨ متوفر بألوان متعددة.\n📏 المقاس: Standard\n💰 الثمن: 280 درهم فقط\n🚚 التوصيل مجاني لجميع أنحاء المغرب\n💵 الأداء عند الاستلام، بلا تسبيق وبلا تحويل مسبق.\n❤️ اختاري اللون ديالك وطلبي دابا!":""))}</textarea><label>Description en français</label><textarea id="f_df">${v(p.desc_fr??(ed===null?"😍 L’élégance que vous recherchez est arrivée !\nUn ensemble femme deux pièces à rayures, avec veste boutonnée et pantalon assorti, pour un look soigné et confortable.\n✨ Plusieurs coloris disponibles.\n📏 Taille : Standard\n💰 Prix : 280 DH\n🚚 Livraison gratuite partout au Maroc.\n💵 Paiement à la livraison, sans avance ni virement.\n❤️ Choisissez votre couleur et commandez dès maintenant !":""))}</textarea>
+<label>الثمن (درهم) *</label><input id="f_pr" type="number" step="0.01" min="0" value="${v(p.price??(ed===null?280:""))}">
 <label>الثمن المخفض (اختياري)</label><input id="f_sp" type="number" step="0.01" min="0" value="${v(p.sale_price)}">
 <label>بداية التخفيض</label><input id="f_ss" type="datetime-local" value="${loc(p.sale_start)}"><label>نهاية التخفيض</label><input id="f_se" type="datetime-local" value="${loc(p.sale_end)}">
 <label>روابط الصور (https، رابط في كل سطر)</label><textarea id="f_im">${v((p.images||[]).join("\n"))}</textarea>
 <label>القسم</label><select id="f_ct"><option value="">بدون قسم</option>${cats.map(c=>`<option value="${c.id}" ${p.category_id===c.id?"selected":""}>${esc(c.name_ar)}</option>`).join("")}</select>
 <label>المخزون: سطر لكل متغير بالشكل لون,مقاس,كمية — مثال: black,M,5 — وبدون ألوان ومقاسات: ,,10</label><textarea id="f_vr">${v((p.variants||[]).map(x=>[x.color,x.size,x.stock].join(",")).join("\n"))}</textarea>
 <div class="ck"><input id="f_nw" type="checkbox" ${p.is_new?"checked":""}><label>منتج جديد</label></div>
-<div class="ck"><input id="f_ac" type="checkbox" ${ed?(p.active?"checked":""):"checked"}><label>ظاهر في المتجر</label></div>
+<div class="ck"><input id="f_ac" type="checkbox" ${ed?(p.active?"checked":""):""}><label>ظاهر في المتجر (خليها غير مفعّلة للمسودة)</label></div>
 <button data-a="savep">حفظ</button><button class="s" style="margin-top:8px" data-a="cancel">إلغاء</button></div>`}
 async function saveP(){
   const g=id=>$("#"+id).value.trim(),n=g("f_ar"),f=g("f_fr"),pr=g("f_pr");
