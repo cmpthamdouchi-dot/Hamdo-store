@@ -99,7 +99,7 @@ async function uploadFiles(){
  if(!ed) throw new Error("احفظ المنتج أولاً ثم افتحه للتعديل قبل رفع الصور");
  const allowed=["image/jpeg","image/png","image/webp"];
  if(files.some(f=>!allowed.includes(f.type))) throw new Error("الصيغ المدعومة هي JPG وPNG وWEBP فقط");
- const urls=($("#f_im").value||"").split("\\n").map(x=>x.trim()).filter(x=>/^https:\\/\\//.test(x));
+ const urls=($("#f_im").value||"").split("\n").map(x=>x.trim()).filter(x=>/^https:\/\//.test(x));
  $("#upmsg").textContent="جارٍ رفع الصور...";
  for(let i=0;i<files.length;i++){
    const file=files[i],ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";
@@ -110,7 +110,7 @@ async function uploadFiles(){
    $("#upmsg").textContent="تم رفع "+(i+1)+" من "+files.length;
  }
  await api("products?id=eq."+ed.id,{method:"PATCH",body:JSON.stringify({images:urls}),headers:{Prefer:"return=minimal"}});
- $("#f_im").value=urls.join("\\n");
+ $("#f_im").value=urls.join("\n");
  $("#upmsg").textContent="تم رفع وربط "+files.length+" صورة جديدة. المجموع: "+urls.length;
  msg("تم رفع الصور وربطها بالمنتج");
  await load(); const savedId=ed.id; ed=prods.find(p=>p.id===savedId); form=true; draw();
