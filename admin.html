@@ -81,7 +81,8 @@ document.addEventListener("click",async e=>{
   try{
     if(a==="in"){sv(await auth("token?grant_type=password",{email:$("#em").value.trim(),password:$("#pw").value}));await boot()}
     else if(a==="out"){sv(null);draw()}
-    else if(a==="tab"){tab=b.dataset.v;form=false;ed=null;draw()}\n    else if(a==="status"){const st=document.querySelector(`[data-order-status="${id}"]`).value;await api("orders?id=eq."+id,{method:"PATCH",body:JSON.stringify({status:st}),headers:{Prefer:"return=minimal"}});await load();msg("تم تحديث حالة الطلب")}
+    else if(a==="tab"){tab=b.dataset.v;form=false;ed=null;draw()}
+    else if(a==="status"){const st=document.querySelector(`[data-order-status="${id}"]`).value;await api("orders?id=eq."+id,{method:"PATCH",body:JSON.stringify({status:st}),headers:{Prefer:"return=minimal"}});await load();msg("تم تحديث حالة الطلب")}
     else if(a==="addc"){const x=$("#ca").value.trim(),y=$("#cf").value.trim();if(!x||!y)throw new Error("أدخل الاسمين");await api("categories",{method:"POST",body:JSON.stringify({name_ar:x,name_fr:y,sort:+$("#cs").value||0,parent_id:$("#cp").value?+$("#cp").value:null}),headers:{Prefer:"return=minimal"}});await load();msg("أُضيف القسم")}
     else if(a==="tc"){const c=cats.find(c=>c.id===id);await api("categories?id=eq."+id,{method:"PATCH",body:JSON.stringify({active:!c.active}),headers:{Prefer:"return=minimal"}});await load()}
     else if(a==="dc"){if(confirm("حذف هذا القسم؟ منتجاته تبقى دون قسم.")){await api("categories?id=eq."+id,{method:"DELETE"});await load()}}
