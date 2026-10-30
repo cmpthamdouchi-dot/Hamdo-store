@@ -69,10 +69,10 @@ h2{font-size:19px;margin:18px 14px 10px}
 <script src="config.js"></script>
 <script>
 let CATS=[];
-const COL={black:["#222","أسود","Noir"],white:["#eee","أبيض","Blanc"],orange:["#F46B35","برتقالي","Orange"],gray:["#888","رمادي","Gris"],blue:["#2f6fd0","أزرق","Bleu"]};
+const COL={black:["#222","أسود","Noir"],white:["#eee","أبيض","Blanc"],orange:["#F46B35","برتقالي","Orange"],gray:["#888","رمادي","Gris"],blue:["#2f6fd0","أزرق","Bleu"],teal:["#168b83","أزرق مخضر","Bleu canard"],grey:["#888","رمادي","Gris"],pink:["#e98ba8","وردي","Rose"],brown:["#795548","بني","Marron"],argile:["#b58a70","طيني","Argile"],grouna:["#800020","خمري","Bordeaux"]};
 let P=[],st="ld";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const cn=c=>COL[c]?COL[c][lang==="ar"?1:2]:(c||"");
+const cn=c=>{const key=String(c||"").trim().toLowerCase();return COL[key]?COL[key][lang==="ar"?1:2]:(c||"");};
 const pic=p=>p.img?`<img src="${p.img}" alt="">`:p.emoji;
 const X={ar:{ld:"جارٍ تحميل المنتجات…",es:"المتجر قيد التجهيز، سنضيف المنتجات قريباً.",er:"تعذّر تحميل المنتجات. تحقق من الاتصال وأعد المحاولة."},fr:{ld:"Chargement des produits…",es:"La boutique est en préparation, les produits arrivent bientôt.",er:"Impossible de charger les produits. Vérifiez la connexion et réessayez."}};
 const T={
