@@ -23,6 +23,7 @@ small{color:var(--g3)}
 </head>
 <body>
 <div id="app"></div><div id="m"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 // إعدادات عامة فقط (Project URL + Publishable key). ممنوع وضع service_role أو أي سر هنا.
 const HAMDO={url:"https://qkjarvcefzllkfogewqr.supabase.co",key:"sb_publishable_f27DGvJ2RVdZR7nUp_oGjA_znpHay0A"};
@@ -86,7 +87,8 @@ document.addEventListener("click",async e=>{
     else if(a==="newp"){ed=null;form=true;draw()}
     else if(a==="ep"){ed=prods.find(p=>p.id===id);form=true;draw()}
     else if(a==="cancel"){form=false;ed=null;draw()}
-    else if(a==="savep")await saveP();\n    else if(a==="upzip")await uploadZip();
+    else if(a==="savep")await saveP();
+    else if(a==="upzip")await uploadZip();
   }catch(x){msg(x.message)}finally{b.disabled=false}});
 boot();
 
@@ -95,7 +97,7 @@ async function uploadZip(){
  if(!ed) throw new Error("احفظ المنتج أولاً ثم افتحه للتعديل قبل رفع الصور");
  if(!window.JSZip) throw new Error("تعذر تحميل أداة قراءة ZIP. أعد تحميل الصفحة وحاول مجدداً");
  $("#upmsg").textContent="جارٍ تجهيز الصور...";
- const zip=await JSZip.loadAsync(file), names=Object.keys(zip.files).filter(n=>!zip.files[n].dir && /\\.(jpe?g|png|webp)$/i.test(n)).sort();
+ const zip=await JSZip.loadAsync(file), names=Object.keys(zip.files).filter(n=>!zip.files[n].dir && /\.(jpe?g|png|webp)$/i.test(n)).sort();
  if(!names.length) throw new Error("لم أجد صوراً داخل ملف ZIP");
  const urls=[];
  for(let i=0;i<names.length;i++){
@@ -108,7 +110,7 @@ async function uploadZip(){
    $("#upmsg").textContent="تم رفع "+(i+1)+" من "+names.length;
  }
  await api("products?id=eq."+ed.id,{method:"PATCH",body:JSON.stringify({images:urls}),headers:{Prefer:"return=minimal"}});
- $("#f_im").value=urls.join("\\n");
+ $("#f_im").value=urls.join("\n");
  $("#upmsg").textContent="تم رفع وربط "+urls.length+" صورة بنجاح";
  msg("تم رفع الصور وربطها بالمنتج");
  await load(); ed=prods.find(p=>p.id===ed.id); form=true; draw();
