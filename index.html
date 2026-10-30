@@ -90,14 +90,19 @@ function render(){
   const d=document.documentElement;d.lang=lang;d.dir=lang==="ar"?"rtl":"ltr";
   $("#lb").textContent=t("lg");$("#q").placeholder=t("s");
   $("#dl").innerHTML=P.map(p=>`<option value="${p[lang]}">`).join("");
-  const roots=CATS.filter(c=>!c.parent_id),children=CATS.filter(c=>c.parent_id===parentCat);\n  const shown=parentCat==="all"?roots:children;\n  $("#chips").innerHTML=[{id:"all",ar:T.ar.all,fr:T.fr.all},...shown].map(c=>`<button class="chip ${cat===c.id?"on":""}" data-act="cat" data-v="${c.id}">${c[lang]}</button>`).join("");
-  $("#fc").textContent=favs.length||"";$("#cc").textContent=cart.reduce((s,i)=>s+i.q,0)||"";
-  const q=$("#q").value.trim().toLowerCase();let list=P.filter(p=>cat==="all"||p.cat===cat);
+  const roots=CATS.filter(x=>!x.parent_id);
+  const children=CATS.filter(x=>x.parent_id===cat);
+  const shown=cat==="all"?roots:children;
+  $("#chips").innerHTML=[{id:"all",ar:T.ar.all,fr:T.fr.all},...shown].map(x=>`<button class="chip ${cat===x.id?"on":""}" data-act="cat" data-v="${x.id}">${x[lang]}</button>`).join("");
+  $("#fc").textContent=favs.length||"";$("#cc").textContent=cart.reduce((s,x)=>s+x.q,0)||"";
+  const q=$("#q").value.trim().toLowerCase();
+  const childIds=children.map(x=>x.id);
+  let list=P.filter(p=>cat==="all"||(childIds.length?childIds.includes(p.cat):p.cat===cat));
   if(view==="favs")list=P.filter(p=>favs.includes(p.id));
   if(q)list=list.filter(p=>(p.ar+p.fr+p.da+p.df).toLowerCase().includes(q));
   let h="";
   if(view==="favs")h=`<h2>${t("favs")}</h2>`+grid(list)+`<p class="note" style="margin-top:12px"><button data-act="home">← ${t("all")}</button></p>`;
-  else if(q||cat!=="all")h=(childIds.length?`<h2>${CATS.find(c=>c.id===cat)?.[lang]||""}</h2>`:q?"":`<h2>${CATS.find(c=>c.id===cat)?.[lang]||""}</h2>`)+ (childIds.length?`<div class="chips">${children.map(c=>`<button class="chip" data-act="cat" data-v="${c.id}">${c[lang]}</button>`).join("")}</div>`:"") +(list.length?grid(list):`<p class="note" style="margin-top:14px">${t("none2")}</p>`);
+  else if(q||cat!=="all")h=(cat!=="all"?`<h2>${CATS.find(x=>x.id===cat)?.[lang]||""}</h2>`:"")+(childIds.length?`<div class="chips">${children.map(x=>`<button class="chip" data-act="cat" data-v="${x.id}">${x[lang]}</button>`).join("")}</div>`:"")+(list.length?grid(list):`<p class="note" style="margin-top:14px">${t("none2")}</p>`);
   else h=`<div class="hero"><b>${t("hero")}</b>${t("herot")}</div><h2>${t("new")}</h2>`+grid(P.filter(p=>p.isNew))+`<h2>${t("deals")}</h2>`+grid(P.filter(p=>p.sale))+`<h2>${t("best")}</h2><p class="note">${t("bestn")}</p><h2>${t("more")}</h2>`+grid(P);
   $("#main").innerHTML=st==="ok"&&P.length?h:`<p class="note" style="margin:14px">${X[lang][st==="ok"?"es":st]}</p>`;
 }
