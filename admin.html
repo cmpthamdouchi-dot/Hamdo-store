@@ -68,15 +68,18 @@ function formHtml(){const p=ed||{},v=x=>esc(x??"");
 <button data-a="savep">حفظ</button><button class="s" style="margin-top:8px" data-a="cancel">إلغاء</button></div>`}
 async function saveP(){
   const g=id=>$("#"+id).value.trim(),n=g("f_ar"),f=g("f_fr"),pr=g("f_pr");
-  if(!n||!f||pr===""||+pr<0)throw new Error("أكمل الاسمين والثمن");\n  const sourceUrl=g("f_source_url");if(sourceUrl&& !/^https?:\\/\\//i.test(sourceUrl))throw new Error("رابط المصدر خاصو يبدأ بـ https:// أو http://");
+  if(!n||!f||pr===""||+pr<0)throw new Error("أكمل الاسمين والثمن");
+  const sourceUrl=g("f_source_url");
+  if(sourceUrl&&!/^https?:\/\//i.test(sourceUrl))throw new Error("رابط المصدر خاصو يبدأ بـ https:// أو http://");
   const sp=g("f_sp"),body={name_ar:n,name_fr:f,desc_ar:g("f_da"),desc_fr:g("f_df"),price:+pr,sale_price:sp===""?null:+sp,sale_start:dt(g("f_ss")),sale_end:dt(g("f_se")),
-    images:g("f_im").split("\n").map(s=>s.trim()).filter(s=>/^https:\/\//.test(s)),category_id:g("f_ct")?+g("f_ct"):null,is_new:$("#f_nw").checked,active:$("#f_ac").checked};
+    images:g("f_im").split("\n").map(s=>s.trim()).filter(s=>/^https:\/\//.test(s)),source_name:g("f_source"),source_url:sourceUrl,category_id:g("f_ct")?+g("f_ct"):null,is_new:$("#f_nw").checked,active:$("#f_ac").checked};
   const vars=g("f_vr").split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const a=l.split(",").map(s=>s.trim());return{color:a[0]||"",size:a[1]||"",stock:Math.max(0,parseInt(a[2])||0)}});
   let id;
   if(ed){id=ed.id;await api("products?id=eq."+id,{method:"PATCH",body:JSON.stringify(body),headers:{Prefer:"return=minimal"}});await api("variants?product_id=eq."+id,{method:"DELETE"})}
   else{id=(await api("products",{method:"POST",body:JSON.stringify(body),headers:{Prefer:"return=representation"}}))[0].id}
   if(vars.length)await api("variants",{method:"POST",body:JSON.stringify(vars.map(x=>({...x,product_id:id}))),headers:{Prefer:"return=minimal"}});
-  form=false;ed=null;await load();msg("تم الحفظ")}
+  form=false;ed=null;await load();msg("تم الحفظ")
+}
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,id=+b.dataset.id;b.disabled=true;
   try{
@@ -105,7 +108,7 @@ async function exportOrders(){
  const rows=pendingOrders.map(o=>{const items=o.order_items||[];return [
   o.order_number,new Date(o.created_at).toLocaleString("fr-MA"),o.customer_name,o.phone,o.city,o.address,o.note||"",
   items.map(i=>i.product_name_ar).join(" | "),items.map(i=>i.color||"").join(" | "),items.map(i=>i.size||"").join(" | "),
-  items.map(i=>i.quantity).join(" | "),Number(o.total),o.payment_method==="cod"?"الدفع عند الاستلام":o.payment_method,o.status
+  items.map(i=>i.quantity).join(" | "),Number(o.total),o.payment_method==="cod"?"الدفع عند الاستلام":o.payment_method,o.status,items.map(i=>i.source_name||"").join(" | "),items.map(i=>i.source_url||"").join(" | ")
  ]});
  const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
  ws["!cols"]=[{wch:20},{wch:20},{wch:24},{wch:16},{wch:18},{wch:38},{wch:25},{wch:34},{wch:18},{wch:18},{wch:12},{wch:16},{wch:22},{wch:28},{wch:22},{wch:48}];
