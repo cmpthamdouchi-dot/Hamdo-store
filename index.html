@@ -108,7 +108,7 @@ function render(){
   let h="";
   if(view==="favs")h=`<h2>${t("favs")}</h2>`+grid(list)+`<p class="note" style="margin-top:12px"><button data-act="home">← ${t("all")}</button></p>`;
   else if(q||cat!=="all")h=(cat!=="all"?`<h2>${CATS.find(x=>x.id===cat)?.[lang]||""}</h2>`:"")+(childIds.length?`<div class="chips">${children.map(x=>`<button class="chip" data-act="cat" data-v="${x.id}">${x[lang]}</button>`).join("")}</div>`:"")+(list.length?grid(list):`<p class="note" style="margin-top:14px">${t("none2")}</p>`);
-  else h=`<div class="hero"><b>${t("hero")}</b>${t("herot")}</div><h2>${t("new")}</h2>`+grid(P.filter(p=>p.isNew))+`<h2>${t("deals")}</h2>`+hscroll(P.filter(p=>p.sale))+`<h2>${t("best")}</h2><p class="note">${t("bestn")}</p><h2>${t("more")}</h2>`+grid(P);
+  else h=`<div class="hero"><b>${t("hero")}</b>${t("herot")}</div><h2>${t("new")}</h2>`+grid(P.filter(p=>p.isNew))+`<h2>${t("deals")}</h2>`+hscroll(P.filter(p=>p.sale))+`<h2>${t("best")}</h2><div class="deal-strip best-strip"><p class="note">${t("bestn")}</p></div><h2>${t("more")}</h2>`+grid(P);
   $("#main").innerHTML=st==="ok"&&P.length?h:`<p class="note" style="margin:14px">${X[lang][st==="ok"?"es":st]}</p>`;
 }
 function sheet(h){$("#sh").innerHTML=h;$("#ov").classList.add("show")}
