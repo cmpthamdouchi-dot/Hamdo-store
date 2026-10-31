@@ -27,6 +27,9 @@ h2{font-size:19px;margin:18px 14px 10px}
 .hero b{font-size:24px;display:block;margin-bottom:6px}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:0 14px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+.deal-strip{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;padding:0 14px 12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.deal-strip .card{flex:0 0 44%;min-width:0;scroll-snap-align:start}
+@media(min-width:700px){.deal-strip .card{flex-basis:220px}}
 .card{cursor:pointer}
 .im{position:relative;aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:64px}
 .tag{position:absolute;top:8px;inset-inline-start:8px;background:var(--o);color:#fff;font-size:12px;font-weight:700;padding:3px 8px;border-radius:8px}
@@ -87,6 +90,7 @@ const $=s=>document.querySelector(s),pp=id=>P.find(p=>p.id===id),eff=p=>p.sale||
 const bg=p=>p.id%2?"#fdeee6":"#f1f1f3";
 function card(p){return `<div class="card" data-act="open" data-id="${p.id}"><div class="im" style="background:${bg(p)}">${pic(p)}${p.stock<=0?`<span class="tag out">${t("out")}</span>`:p.sale?`<span class="tag">-${Math.round(100-p.sale/p.price*100)}%</span>`:""}<button class="fv ${favs.includes(p.id)?"on":""}" data-act="fav" data-id="${p.id}" aria-label="fav">♥</button></div><div class="nm">${p[lang]}</div><div class="pr">${p.sale?`<b>${m(p.sale)}</b> <s>${m(p.price)}</s>`:`<b>${m(p.price)}</b>`}</div></div>`}
 const grid=a=>a.length?`<div class="grid">${a.map(card).join("")}</div>`:`<p class="note">${t("empty")}</p>`;
+const hscroll=a=>a.length?`<div class="deal-strip">${a.map(card).join("")}</div>`:`<p class="note">${t("empty")}</p>`;
 function render(){
   const d=document.documentElement;d.lang=lang;d.dir=lang==="ar"?"rtl":"ltr";
   $("#lb").textContent=t("lg");$("#q").placeholder=t("s");
@@ -104,7 +108,7 @@ function render(){
   let h="";
   if(view==="favs")h=`<h2>${t("favs")}</h2>`+grid(list)+`<p class="note" style="margin-top:12px"><button data-act="home">← ${t("all")}</button></p>`;
   else if(q||cat!=="all")h=(cat!=="all"?`<h2>${CATS.find(x=>x.id===cat)?.[lang]||""}</h2>`:"")+(childIds.length?`<div class="chips">${children.map(x=>`<button class="chip" data-act="cat" data-v="${x.id}">${x[lang]}</button>`).join("")}</div>`:"")+(list.length?grid(list):`<p class="note" style="margin-top:14px">${t("none2")}</p>`);
-  else h=`<div class="hero"><b>${t("hero")}</b>${t("herot")}</div><h2>${t("new")}</h2>`+grid(P.filter(p=>p.isNew))+`<h2>${t("deals")}</h2>`+grid(P.filter(p=>p.sale))+`<h2>${t("best")}</h2><p class="note">${t("bestn")}</p><h2>${t("more")}</h2>`+grid(P);
+  else h=`<div class="hero"><b>${t("hero")}</b>${t("herot")}</div><h2>${t("new")}</h2>`+grid(P.filter(p=>p.isNew))+`<h2>${t("deals")}</h2>`+hscroll(P.filter(p=>p.sale))+`<h2>${t("best")}</h2><p class="note">${t("bestn")}</p><h2>${t("more")}</h2>`+grid(P);
   $("#main").innerHTML=st==="ok"&&P.length?h:`<p class="note" style="margin:14px">${X[lang][st==="ok"?"es":st]}</p>`;
 }
 function sheet(h){$("#sh").innerHTML=h;$("#ov").classList.add("show")}
