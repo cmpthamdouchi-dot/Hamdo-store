@@ -15,7 +15,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--g2);padding:10px 14px}
 .top{display:flex;align-items:center;gap:10px}
 .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:27px;letter-spacing:1px;flex:1;color:#F46B35;font-family:Arial,sans-serif}
-.logo img{width:34px;height:34px}
+.logo img{width:48px;height:48px;object-fit:contain;display:block}
 .ib{min-width:44px;height:44px;border-radius:12px;background:var(--g1);font-weight:700;position:relative}
 .bd{position:absolute;top:-4px;inset-inline-end:-4px;background:var(--o);color:#fff;font-size:11px;border-radius:10px;padding:1px 6px}
 .sb{width:100%;margin-top:10px;height:44px;border-radius:12px;border:1px solid var(--g2);padding:0 14px;font:inherit;background:var(--g1)}
@@ -56,7 +56,7 @@ h2{font-size:19px;margin:18px 14px 10px}
 <body>
 <header>
   <div class="top">
-    <div class="logo"><img src="HAMDO_logo_transparent.png" alt=""><span>HAMDO</span></div>
+    <div class="logo" aria-label="HAMDO"><img src="HAMDO_logo_transparent.png" alt="HAMDO"></div>
     <button class="ib" data-act="lang" id="lb"></button>
     <button class="ib" data-act="favs" aria-label="favorites">♥<span class="bd" id="fc"></span></button>
     <button class="ib" data-act="cart" aria-label="cart">🛒<span class="bd" id="cc"></span></button>
