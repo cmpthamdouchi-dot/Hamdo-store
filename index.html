@@ -112,7 +112,7 @@ function render(){
   const roots=CATS.filter(x=>!x.parent_id);
   const children=CATS.filter(x=>x.parent_id===cat);
   const shown=cat==="all"?roots:children;
-  $("#chips").innerHTML=[{id:"all",ar:T.ar.all,fr:T.fr.all},...shown].map(x=>`<button class="chip ${cat===x.id?"on":""}" data-act="cat" data-v="${x.id}">${x[lang]}</button>`).join("");
+  $("#chips").innerHTML="";
   $("#fc").textContent=favs.length||"";$("#cc").textContent=cart.reduce((s,x)=>s+x.q,0)||"";
   const q=$("#q").value.trim().toLowerCase();
   const childIds=children.map(x=>x.id);
