@@ -23,8 +23,7 @@ header{position:sticky;top:0;z-index:5;background:rgba(250,247,241,.97);border-b
 .chip{white-space:nowrap;padding:10px 18px;border-radius:22px;background:#fff;border:1px solid var(--g2);font-weight:650;color:#55483D}
 .chip.on{background:var(--o);border-color:var(--o);color:#fff;box-shadow:0 4px 12px rgba(233,120,69,.2)}
 h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
-.hero{margin:12px 14px 22px;padding:26px 22px;border-radius:24px;background:linear-gradient(120deg,#E97845 0%,#D96C40 58%,#BD6546 100%);color:#fff;min-height:156px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;box-shadow:0 10px 24px rgba(166,91,56,.15)}.hero:after{content:"";position:absolute;width:190px;height:190px;border:1px solid rgba(255,255,255,.2);border-radius:50%;left:-55px;top:-68px;box-shadow:0 0 0 22px rgba(255,255,255,.055),0 0 0 45px rgba(255,255,255,.04)}
-.hero b{font-size:25px;display:block;margin-bottom:9px;position:relative;z-index:1}.hero span{font-size:14px;letter-spacing:.4px;opacity:.9;position:relative;z-index:1}.hero div{font-size:16px;position:relative;z-index:1}
+.hero{margin:12px 14px 22px;padding:0;border-radius:24px;background:#F3E4D5;color:var(--tx);min-height:0;display:block;position:relative;overflow:hidden;box-shadow:0 10px 24px rgba(111,72,43,.09);border:1px solid #E9D3BF}.hero img{display:block;width:100%;height:auto;object-fit:contain}.hero:after,.hero:before{display:none}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 13px;padding:0 14px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
 .deal-strip{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;padding:0 14px 12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
@@ -64,11 +63,7 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
 .service-item{text-align:center;padding:0 5px;font-size:12px;font-weight:750;color:#49382C;line-height:1.5}
 .service-item+ .service-item{border-right:1px solid #D8B99F}
 .service-item b{display:block;color:var(--od);font-size:21px;line-height:1.2;margin-bottom:3px}
-.hero{min-height:172px;background:radial-gradient(circle at 8% 15%,rgba(255,255,255,.32),transparent 32%),linear-gradient(115deg,#E7C9AE 0%,#F8EBDD 43%,#E97845 100%);border:1px solid #E9D3BF;box-shadow:0 10px 24px rgba(111,72,43,.09);position:relative}
-.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.16),transparent 55%);pointer-events:none}
-.hero b{font-size:25px;color:#4B2C1D;text-shadow:none}
-.hero div{color:#63422E;font-weight:650}
-.hero span{color:#8A4A26;font-weight:800;letter-spacing:1px}
+.hero{min-height:0}.hero img{width:100%;height:auto;display:block}
 .home-products-head{display:flex;align-items:center;justify-content:space-between;margin:22px 14px 12px}
 .home-products-head h2{margin:0}
 .home-products-head button{border:1px solid var(--o);color:var(--od);border-radius:22px;padding:7px 13px;font-weight:700;background:#fff}
@@ -127,7 +122,7 @@ function render(){
   let h="";
   if(view==="favs")h=`<h2>${t("favs")}</h2>`+grid(list)+`<p class="note" style="margin-top:12px"><button data-act="home">← ${t("all")}</button></p>`;
   else if(q||cat!=="all")h=(cat!=="all"?`<h2>${CATS.find(x=>x.id===cat)?.[lang]||""}</h2>`:"")+(childIds.length?`<div class="chips">${children.map(x=>`<button class="chip" data-act="cat" data-v="${x.id}">${x[lang]}</button>`).join("")}</div>`:"")+(list.length?grid(list):`<p class="note" style="margin-top:14px">${t("none2")}</p>`);
-  else {const roots=CATS.filter(x=>!x.parent_id);const icons=["👘","🖤","👗","🧥","👜","💍","👠","🕶️","🧣"];h=`<div class="hero"><span>HAMDO · MODE FÉMININE</span><b>عالم الأناقة النسائية</b><div>جلابيات · عبايات · فساتين · أطقم · إكسسوارات</div><div style="margin-top:13px"><button class="cta" style="max-width:170px;height:42px" data-act="cat" data-v="all">تسوّقي الآن ←</button></div></div>`+`<div class="home-categories">${roots.slice(0,9).map((x,i)=>`<button class="home-cat" data-act="cat" data-v="${x.id}"><span>${icons[i%icons.length]}</span><span>${x[lang]}</span></button>`).join("")}</div>`+`<div class="service-strip"><div class="service-item"><b>🚚</b>${lang==="ar"?"توصيل مجاني":"Livraison gratuite"}</div><div class="service-item"><b>🛡️</b>${lang==="ar"?"الدفع عند الاستلام":"Paiement à la livraison"}</div><div class="service-item"><b>🎧</b>${lang==="ar"?"خدمة الزبناء":"Service client"}</div></div>`+`<div class="home-products-head"><h2>${t("new")}</h2><button data-act="cat" data-v="all">${lang==="ar"?"عرض المزيد":"Voir plus"}</button></div>`+grid(P.filter(p=>p.isNew))+`<hr class="section-sep"><h2>${t("deals")}</h2>`+hscroll(P.filter(p=>p.sale))+`<hr class="section-sep"><h2>${t("more")}</h2>`+grid(P); }
+  else {const roots=CATS.filter(x=>!x.parent_id);const icons=["👘","🖤","👗","🧥","👜","💍","👠","🕶️","🧣"];h=`<div class="hero"><img src="file_00000000a2a081f48f2b97d55e8be473.png" alt="HAMDO - أزياء عصرية للنساء"></div>`+`<div class="home-categories">${roots.slice(0,9).map((x,i)=>`<button class="home-cat" data-act="cat" data-v="${x.id}"><span>${icons[i%icons.length]}</span><span>${x[lang]}</span></button>`).join("")}</div>`+`<div class="service-strip"><div class="service-item"><b>🚚</b>${lang==="ar"?"توصيل مجاني":"Livraison gratuite"}</div><div class="service-item"><b>🛡️</b>${lang==="ar"?"الدفع عند الاستلام":"Paiement à la livraison"}</div><div class="service-item"><b>🎧</b>${lang==="ar"?"خدمة الزبناء":"Service client"}</div></div>`+`<div class="home-products-head"><h2>${t("new")}</h2><button data-act="cat" data-v="all">${lang==="ar"?"عرض المزيد":"Voir plus"}</button></div>`+grid(P.filter(p=>p.isNew))+`<hr class="section-sep"><h2>${t("deals")}</h2>`+hscroll(P.filter(p=>p.sale))+`<hr class="section-sep"><h2>${t("more")}</h2>`+grid(P); }
   $("#main").innerHTML=st==="ok"&&P.length?h:`<p class="note" style="margin:14px">${X[lang][st==="ok"?"es":st]}</p>`;
 }
 function sheet(h){$("#sh").innerHTML=h;$("#ov").classList.add("show")}
