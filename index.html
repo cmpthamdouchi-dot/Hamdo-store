@@ -40,7 +40,7 @@ h2{font-size:19px;margin:18px 14px 10px}
 .pr{margin-top:2px}.pr b{color:var(--od)}.pr s{color:var(--g3);font-size:13px}
 .im img,.em img{width:100%;height:100%;object-fit:cover;border-radius:inherit}.sh > .im img{object-fit:contain;background:#fff}
 .product-stage{display:grid;grid-template-columns:minmax(0,3.4fr) minmax(76px,.85fr);gap:8px;align-items:start;direction:ltr;margin:0 0 12px;height:auto;min-height:0;max-height:none;overflow:hidden}.product-main{grid-column:1;grid-row:1;min-height:0;height:auto;max-height:none;align-self:start}.gallery-rail{grid-column:2;grid-row:1;height:auto;max-height:74vh;min-height:0;overflow-y:auto;box-sizing:border-box}.product-main{width:100%;min-width:0;min-height:0;border-radius:14px;overflow:hidden;display:flex;align-items:flex-start;justify-content:center}.product-main img{display:block;width:100%;height:auto;max-height:74vh;object-fit:contain;background:#fff}.gallery-rail{height:auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;display:flex;flex-direction:column;gap:8px;align-items:stretch;padding:2px 0}.gallery-rail button{width:100%;height:96px;min-height:96px;flex:0 0 96px;border:2px solid var(--g2);border-radius:9px;overflow:hidden;padding:0;background:#fff}.gallery-rail button.on{border-color:var(--o)}.gallery-rail img{width:100%;height:100%;object-fit:cover}.desc{margin:8px 0;color:var(--g3);white-space:pre-line;line-height:1.7}
-.note{margin:0 14px;padding:14px;border-radius:12px;background:var(--g1);color:var(--g3);font-size:14px;line-height:1.6}
+.section-sep{height:2px;background:var(--o);border:0;margin:18px 14px;opacity:.9}.note{margin:0 14px;padding:14px;border-radius:12px;background:var(--g1);color:var(--g3);font-size:14px;line-height:1.6}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:none;align-items:flex-end}
 .ov.show{display:flex}
 .sh{background:#fff;width:100%;max-height:90vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px;max-width:640px;margin:auto auto 0}
@@ -108,7 +108,7 @@ function render(){
   let h="";
   if(view==="favs")h=`<h2>${t("favs")}</h2>`+grid(list)+`<p class="note" style="margin-top:12px"><button data-act="home">← ${t("all")}</button></p>`;
   else if(q||cat!=="all")h=(cat!=="all"?`<h2>${CATS.find(x=>x.id===cat)?.[lang]||""}</h2>`:"")+(childIds.length?`<div class="chips">${children.map(x=>`<button class="chip" data-act="cat" data-v="${x.id}">${x[lang]}</button>`).join("")}</div>`:"")+(list.length?grid(list):`<p class="note" style="margin-top:14px">${t("none2")}</p>`);
-  else h=`<div class="hero"><b>${t("hero")}</b>${t("herot")}</div><h2>${t("new")}</h2>`+grid(P.filter(p=>p.isNew))+`<h2>${t("deals")}</h2>`+hscroll(P.filter(p=>p.sale))+`<h2>${t("more")}</h2>`+grid(P);
+  else h=`<div class="hero"><b>${t("hero")}</b>${t("herot")}</div><h2>${t("new")}</h2>`+grid(P.filter(p=>p.isNew))+`<hr class="section-sep"><h2>${t("deals")}</h2>`+hscroll(P.filter(p=>p.sale))+`<hr class="section-sep"><h2>${t("more")}</h2>`+grid(P);
   $("#main").innerHTML=st==="ok"&&P.length?h:`<p class="note" style="margin:14px">${X[lang][st==="ok"?"es":st]}</p>`;
 }
 function sheet(h){$("#sh").innerHTML=h;$("#ov").classList.add("show")}
