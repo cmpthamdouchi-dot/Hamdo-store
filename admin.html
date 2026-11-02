@@ -99,7 +99,7 @@ document.addEventListener("click",async e=>{
     else if(a==="tc"){const c=cats.find(c=>c.id===id);await api("categories?id=eq."+id,{method:"PATCH",body:JSON.stringify({active:!c.active}),headers:{Prefer:"return=minimal"}});await load()}
     else if(a==="dc"){if(confirm("حذف هذا القسم؟ منتجاته تبقى دون قسم.")){await api("categories?id=eq."+id,{method:"DELETE"});await load()}}
     else if(a==="newp"){ed=null;form=true;draw()}
-    else if(a==="ep"){ed=prods.find(p=>p.id===id);form=true;draw()}
+    else if(a==="ep"){ed=prods.find(p=>p.id===id);if(!ed)throw new Error("المنتج غير موجود في قائمة المنتجات");tab="p";form=true;draw()}
     else if(a==="cancel"){form=false;ed=null;draw()}
     else if(a==="savep")await saveP();
     else if(a==="upzip")await uploadZip();
