@@ -19,7 +19,7 @@ button.s{background:var(--g1);color:#222}button.d{background:#c0392b}button:disa
 label{font-size:14px;color:var(--g3)}.ck{display:flex;gap:8px;align-items:center;margin-bottom:10px}.ck input{width:auto;margin:0}
 small{color:var(--g3)}
 #m{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;display:none;max-width:90%;z-index:9}
- .photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 14px}.photo-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;border:1px solid var(--g2)}.photo-count{font-size:13px;color:var(--g3);margin:6px 0}</style>
+ .photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 14px}.photo-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;border:1px solid var(--g2)}.photo-count{font-size:13px;color:var(--g3);margin:6px 0}.ref-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 14px}.ref-grid img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#f7f7f7;border:1px solid #f0b18e;border-radius:10px}.ref-note{background:#fff6ef;border:1px solid #ffd5bd;padding:10px;border-radius:10px;margin:8px 0;color:#8a421f;font-size:13px}</style>
 </head>
 <body>
 <div id="app"><div class="c"><h2>HAMDO — لوحة الإدارة</h2><p>جاري تحميل لوحة الإدارة...</p><p>إذا بقيت هذه الرسالة ظاهرة، فهذا يعني أن JavaScript لم يتم تحميله.</p></div></div><div id="m"></div>
@@ -68,6 +68,12 @@ function formHtml(){const p=ed||{},v=x=>esc(x??"");
 <label>الثمن المخفض (اختياري)</label><input id="f_sp" type="number" step="0.01" min="0" value="${v(p.sale_price)}">
 <label>بداية التخفيض</label><input id="f_ss" type="datetime-local" value="${loc(p.sale_start)}"><label>نهاية التخفيض</label><input id="f_se" type="datetime-local" value="${loc(p.sale_end)}">
 <label>رفع الصور مباشرة (يمكن اختيار عدة صور مرة واحدة)</label><input id="f_files" type="file" accept="image/jpeg,image/png,image/webp" multiple><button type="button" class="s" data-a="upfiles">رفع الصور المختارة وربطها بالمنتج</button><small id="upmsg">اختَر الصور مباشرة من الهاتف أو الحاسوب، بلا ZIP.</small><hr style="border:0;border-top:1px solid var(--g2);margin:10px 0"><label>أو رفع ملف ZIP</label><input id="f_zip" type="file" accept=".zip,application/zip"><button type="button" class="s" data-a="upzip">رفع ملف ZIP</button><label>روابط الصور (https، رابط في كل سطر)</label><textarea id="f_im">${v((p.images||[]).join("\n"))}</textarea><div class="photo-count">معاينة الصور: ${(p.images||[]).length} صورة</div><div class="photo-grid">${(p.images||[]).map((u,i)=>`<img src="${v(u)}" alt="صورة المنتج ${i+1}" loading="lazy">`).join("")}</div>
+<div class="ref-note">صور مرجعية من Affilo — خاصة بالإدارة فقط، لا تظهر للزبائن.</div>
+<label>رفع صور المنتج الأصلية من Affilo</label><input id="f_supplier_files" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+<button type="button" class="s" data-a="upsupplier">رفع الصور المرجعية</button>
+<small id="supplier_upmsg">يمكنك تحميل الصور من Affilo ثم اختيارها هنا.</small>
+<div class="photo-count">الصور المرجعية المحفوظة: ${"${(p.supplier_images||[]).length}"} صورة</div>
+<div class="ref-grid">${"${(p.supplier_images||[]).map((u,i)=>`"}<img src="${"${v(u)}"}" alt="صورة مرجعية من Affilo ${"${i+1}"}" loading="lazy">${"`.join("")}"}</div>
 <label>القسم</label><select id="f_ct"><option value="">بدون قسم</option>${cats.map(c=>`<option value="${c.id}" ${p.category_id===c.id?"selected":""}>${esc(c.name_ar)}</option>`).join("")}</select>
 <label>المخزون: سطر لكل متغير بالشكل لون,مقاس,كمية</label><textarea id="f_vr">${v((p.variants||[]).map(x=>[x.color,x.size,x.stock].join(",")).join("\n")||(ed===null?["White","Teal","Black","Grey","Pink","Grouna","Brown","Argile"].map(c=>c+",Standard,60").join("\n"):""))}</textarea>
 <div class="ck"><input id="f_nw" type="checkbox" ${p.is_new?"checked":""}><label>منتج جديد</label></div>
@@ -104,6 +110,7 @@ document.addEventListener("click",async e=>{
     else if(a==="savep")await saveP();
     else if(a==="upzip")await uploadZip();
     else if(a==="upfiles")await uploadFiles();
+    else if(a==="upsupplier")await uploadSupplierFiles();
   }catch(x){msg(x.message)}finally{b.disabled=false}});
 boot();
 
@@ -150,6 +157,29 @@ async function uploadFiles(){
  msg("تم رفع الصور وربطها بالمنتج");
  await load(); const savedId=ed.id; ed=prods.find(p=>p.id===savedId); form=true; draw();
 }
+
+async function uploadSupplierFiles(){
+ const files=[...($("#f_supplier_files").files||[])];
+ if(!files.length) throw new Error("اختَر صور Affilo أولاً");
+ if(!ed) throw new Error("احفظ المنتج أولاً ثم افتحه للتعديل");
+ const allowed=["image/jpeg","image/png","image/webp"];
+ if(files.some(f=>!allowed.includes(f.type))) throw new Error("الصيغ المدعومة هي JPG وPNG وWEBP فقط");
+ const productId=ed.id, urls=[...(ed.supplier_images||[])];
+ const status=$("#supplier_upmsg"); if(status)status.textContent="جارٍ رفع الصور المرجعية...";
+ for(let i=0;i<files.length;i++){
+   const file=files[i],ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";
+   const path="supplier-reference/"+productId+"/"+Date.now()+"_"+String(i+1).padStart(2,"0")+"."+ext;
+   const res=await fetch(U+"/storage/v1/object/product-images/"+path,{method:"POST",headers:{apikey:K,Authorization:"Bearer "+S.access_token,"Content-Type":file.type,"x-upsert":"false"},body:file});
+   if(!res.ok){const t=await res.text();throw new Error("فشل رفع الصورة المرجعية "+(i+1)+": "+t)}
+   urls.push(U+"/storage/v1/object/public/product-images/"+path);
+   if(status)status.textContent="تم رفع "+(i+1)+" من "+files.length;
+ }
+ await api("products?id=eq."+productId,{method:"PATCH",body:JSON.stringify({supplier_images:urls}),headers:{Prefer:"return=minimal"}});
+ await load();
+ ed=prods.find(p=>p.id===productId);form=true;draw();
+ msg("تم حفظ الصور المرجعية من Affilo");
+}
+
 async function uploadZip(){
  const file=$("#f_zip").files[0]; if(!file) throw new Error("اختَر ملف ZIP أولاً");
  if(!ed) throw new Error("احفظ المنتج أولاً ثم افتحه للتعديل قبل رفع الصور");
