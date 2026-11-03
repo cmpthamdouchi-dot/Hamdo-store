@@ -170,7 +170,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
   else if(a==="pi"){sel.img=+b.dataset.v;drawP()}
   else if(a==="pc"){sel.c=b.dataset.v;drawP()}
   else if(a==="ps"){sel.s=b.dataset.v;drawP()}
-  else if(a==="add"){const p=pp(sel.id),qty=sel.q||1;metaTrack("AddToCart",{content_ids:metaVariantIds(p,sel.c,sel.s),content_type:"product",content_name:p[lang],value:eff(p)*qty,currency:"MAD});const f=cart.find(i=>i.id===sel.id&&i.c===sel.c&&i.s===sel.s);f?f.q+=qty:cart.push({id:sel.id,c:sel.c,s:sel.s,q:qty});sv("cart",cart);closeSheet();render();toast(t("added"))}
+  else if(a==="add"){const p=pp(sel.id),qty=sel.q||1;metaTrack("AddToCart",{content_ids:metaVariantIds(p,sel.c,sel.s),content_type:"product",content_name:p[lang],value:eff(p)*qty,currency:"MAD"});const f=cart.find(i=>i.id===sel.id&&i.c===sel.c&&i.s===sel.s);f?f.q+=qty:cart.push({id:sel.id,c:sel.c,s:sel.s,q:qty});sv("cart",cart);closeSheet();render();toast(t("added"))}
   else if(a==="buy"){checkoutItems([{id:sel.id,c:sel.c,s:sel.s,q:sel.q||1}],false)}
   else if(a==="checkout"){checkoutItems(cart,true)}
   else if(a==="qtyplus"){sel.q=Math.min(99,(sel.q||1)+1);$("#buyqty").textContent=sel.q}
