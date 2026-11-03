@@ -193,7 +193,7 @@ async function load(){
       const images=(x.images||[]).filter(u=>/^https:\/\//.test(u)).map(esc),im=images[0]||"";
       return{id:x.id,cat:x.category_id,ar:esc(x.name_ar),fr:esc(x.name_fr),da:esc(x.desc_ar).replace(/\\n/g,"\n"),df:esc(x.desc_fr).replace(/\\n/g,"\n"),price:+x.price,sale:sale||undefined,img:im,images,emoji:"🛍️",
         colors:[...new Set(v.map(y=>y.color).filter(Boolean))].map(esc),sizes:[...new Set(v.map(y=>y.size).filter(Boolean))].map(esc),
-        stock:v.reduce((s,y)=>s+Math.max(0,y.stock-y.reserved),0),isNew:x.is_new}});
+        stock:v.reduce((s,y)=>s+Math.max(0,y.stock-y.reserved),0),variants:v.map(y=>({id:y.id,color:y.color,size:y.size,stock:y.stock,reserved:y.reserved})),isNew:x.is_new}});
     const available=P.filter(x=>x.stock>0);
     const salesCount={};
     if(sales?.ok){const sold=await sales.json();sold.forEach(i=>{salesCount[i.product_id]=(salesCount[i.product_id]||0)+Math.max(0,+i.quantity||0)})}
