@@ -1,5 +1,5 @@
-const C = "hamdo-v2";
-const FILES = ["./", "index.html", "logo.svg", "manifest.webmanifest", "config.js"];
+const C = "hamdo-v3";
+const FILES = ["./", "index.html", "logo.svg", "manifest.webmanifest", "config.js", "hamdo-brand-beige.jpg"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(C).then(c => c.addAll(FILES)));
   self.skipWaiting();
