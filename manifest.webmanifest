@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "HAMDO",
+  "short_name": "HAMDO",
+  "description": "متجر HAMDO للتسوق في المغرب",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F1",
+  "theme_color": "#F46B35",
+  "icons": [
+    {
+      "src": "hamdo-brand-beige.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
