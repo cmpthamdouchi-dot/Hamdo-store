@@ -181,7 +181,7 @@ function drawCart(){const rows=cart.map((i,x)=>{const p=pp(i.id);return `<div cl
   sheet(`<h2 style="margin:0 0 6px">${t("cart")}</h2>${rows||`<p class="note">${t("none")}</p>`}<p style="margin:12px 0"><b>${t("total")}: ${m(tot)}</b><br><small>${t("ship")}</small></p><button class="cta" data-act="checkout" ${cart.length?"":"disabled"}>${t("co")}</button><p class="note" style="margin:8px 0">${t("con")}</p><button class="cta" style="background:var(--g1);color:var(--tx)" data-act="close">${t("close")}</button>`)}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b){if(e.target.id==="ov")closeSheet();return}
   const a=b.dataset.act,id=+b.dataset.id,x=+b.dataset.x;
-  if(a==="lang"){lang=lang==="ar"?"fr":"ar";sv("lang",lang);render()}
+  if(a==="lang"){lang=lang==="ar"?"fr":"ar";sv("lang",lang);render();updateFollowLang()}
   else if(a==="cat"){const v=b.dataset.v==="all"?"all":+b.dataset.v; if(v!=="all"&&CATS.some(c=>c.id===v&&!c.parent_id)){parentCat=v;cat=v}else if(v==="all"){parentCat="all";cat="all"}else{cat=v;parentCat=CATS.find(c=>c.id===v)?.parent_id||"all"}view="home";render()}
   else if(a==="home"){view="home";render()}
   else if(a==="favs"){view="favs";render()}
@@ -231,6 +231,18 @@ async function load(){
 $("#q").addEventListener("input",()=>{view="home";render()});
 load();
 const followForm=document.getElementById("subscribeForm");
+function updateFollowLang(){
+  const ar=lang==="ar";
+  document.getElementById("followTitle").textContent=ar?"تابع جديد HAMDO قبل الجميع":"Suivez les nouveautés HAMDO en avant-première";
+  document.getElementById("followDesc").textContent=ar?"سجّل اسمك ورقم هاتفك، واختار بنفسك واش توصلك أخبار المنتجات والعروض الجديدة.":"Inscrivez votre nom et votre téléphone, puis choisissez de recevoir les nouveautés et les offres.";
+  document.querySelector('label[for="followName"]').textContent=ar?"الاسم الكامل":"Nom complet";
+  document.querySelector('label[for="followPhone"]').textContent=ar?"رقم الهاتف":"Téléphone";
+  document.getElementById("followConsentText").textContent=ar?"أوافق على توصلّي برسائل HAMDO حول المنتجات الجديدة والعروض. يمكنني إلغاء الاشتراك لاحقاً.":"J’accepte de recevoir les nouveautés et offres HAMDO. Je peux me désinscrire à tout moment.";
+  document.getElementById("followName").placeholder=ar?"الاسم الكامل":"Nom complet";
+  document.getElementById("followPhone").placeholder=ar?"06 أو 07":"06 ou 07";
+  document.getElementById("followSubmit").textContent=ar?"سجّلني وتابع الجديد":"M’inscrire";
+}
+updateFollowLang();
 if(followForm){
   followForm.addEventListener("submit",async e=>{
     e.preventDefault();
