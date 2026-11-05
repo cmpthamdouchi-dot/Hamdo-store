@@ -237,10 +237,10 @@ if(followForm){
     const btn=document.getElementById("followSubmit"),msg=document.getElementById("followMsg");
     const fd=new FormData(followForm);
     const full_name=String(fd.get("full_name")||"").trim();
-    let phone=String(fd.get("phone")||"").replace(/[\\s().-]/g,"");
+    let phone=String(fd.get("phone")||"").replace(/[\s().-]/g,"");
     if(phone.startsWith("0")) phone="+212"+phone.slice(1);
     else if(phone.startsWith("212")) phone="+"+phone;
-    if(!/^\\+212[5-7][0-9]{8}$/.test(phone)){
+    if(!/^\+212[5-7][0-9]{8}$/.test(phone)){
       msg.textContent=lang==="ar"?"دخل رقم مغربي صحيح، مثال: 0612345678":"Saisissez un numéro marocain valide, ex. 0612345678";
       return;
     }
