@@ -227,17 +227,19 @@ load();
 let installPrompt=null;
 const installButton=document.getElementById("installApp");
 const installedKey="hamdoAppInstalled";
-const isInstalled=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true||localStorage.getItem(installedKey)==="yes";
+const standaloneMode=window.matchMedia("(display-mode: standalone)");
+const isInstalled=()=>standaloneMode.matches||window.navigator.standalone===true||localStorage.getItem(installedKey)==="yes";
+function syncInstallButton(){
+ if(isInstalled()){installButton.hidden=true;installPrompt=null;}
+ else {installButton.hidden=false;updateInstallLabel();}
+}
 function updateInstallLabel(){
  const ar=lang==="ar";
  installButton.setAttribute("aria-label",ar?"تثبيت HAMDO على الهاتف":"Installer HAMDO");
  document.getElementById("installAppLabel").textContent=ar?"ثبّت HAMDO في هاتفك":"Installer HAMDO";
 }
-function showInstallButton(){
- if(isInstalled()){installButton.hidden=true;return;}
- installButton.hidden=false;updateInstallLabel();
-}
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;showInstallButton();});
+function showInstallButton(){syncInstallButton();}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;syncInstallButton();});
 installButton.addEventListener("click",async()=>{
  if(isInstalled()){installButton.hidden=true;return;}
  if(installPrompt){
@@ -249,8 +251,12 @@ installButton.addEventListener("click",async()=>{
   toast(lang==="ar"?"من قائمة Chrome اختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»":"Dans le menu du navigateur, choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil »");
  }
 });
-window.addEventListener("appinstalled",()=>{try{localStorage.setItem(installedKey,"yes")}catch(e){}installButton.hidden=true;});
-if(!isInstalled())showInstallButton();
+window.addEventListener("appinstalled",()=>{try{localStorage.setItem(installedKey,"yes")}catch(e){}installPrompt=null;installButton.hidden=true;});
+standaloneMode.addEventListener?.("change",syncInstallButton);
+window.addEventListener("pageshow",syncInstallButton);
+window.addEventListener("focus",syncInstallButton);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncInstallButton();});
+if(isInstalled())installButton.hidden=true;else showInstallButton();
 (function(){
  const btn=installButton;
  try{const p=JSON.parse(localStorage.getItem("hamdoInstallPos")||"null");if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)){btn.style.left=p.x+"px";btn.style.top=p.y+"px";btn.style.right="auto";btn.style.bottom="auto";}}catch(e){}
