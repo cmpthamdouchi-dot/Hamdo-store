@@ -88,6 +88,11 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
 @media(min-width:700px){.home-categories{grid-template-columns:repeat(6,minmax(0,1fr))}.service-strip{max-width:900px;margin-inline:auto}.hero{min-height:220px}}
 
 #followFloat{position:fixed;z-index:18;right:16px;bottom:92px;width:62px;height:62px;border-radius:50%;background:var(--o);color:#fff;box-shadow:0 5px 18px rgba(80,45,25,.28);display:flex;align-items:center;justify-content:center;font-size:28px;border:3px solid #fff;touch-action:none;user-select:none;cursor:grab}#followFloat:active{cursor:grabbing}#followFloat span{position:absolute;inset-inline-start:68px;white-space:nowrap;background:#fff;color:var(--od);border:1px solid var(--g2);border-radius:12px;padding:7px 10px;font-size:12px;font-weight:800;box-shadow:0 3px 10px #00000012;pointer-events:none}
+
+#installApp{position:fixed;z-index:19;right:16px;bottom:92px;width:62px;height:62px;border-radius:50%;background:var(--o);color:#fff;box-shadow:0 5px 18px rgba(80,45,25,.28);display:flex;align-items:center;justify-content:center;font-size:27px;border:3px solid #fff;touch-action:none;user-select:none;cursor:grab}
+#installApp:active{cursor:grabbing}
+#installApp span{position:absolute;inset-inline-start:68px;white-space:nowrap;background:#fff;color:var(--od);border:1px solid var(--g2);border-radius:12px;padding:7px 10px;font-size:12px;font-weight:800;box-shadow:0 3px 10px #00000012;pointer-events:none}
+#installApp[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -97,12 +102,12 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
     <button class="ib" data-act="lang" id="lb"></button>
     <button class="ib" data-act="favs" aria-label="favorites">♥<span class="bd" id="fc"></span></button>
     <button class="ib" data-act="cart" aria-label="cart">🛒<span class="bd" id="cc"></span></button>
-    <button class="ib" id="installApp" type="button" hidden>⬇️</button>
   </div>
   <input class="sb" id="q" list="dl" autocomplete="off"><datalist id="dl"></datalist>
 </header>
 <div class="chips" id="chips"></div>
 <main id="main"></main>
+<button id="installApp" type="button" aria-label="تثبيت HAMDO" title="ثبّت HAMDO">⬇️<span id="installAppLabel">ثبّت HAMDO في هاتفك</span></button>
 <div class="ov" id="ov"><div class="sh" id="sh"></div></div>
 <div id="toast"></div>
 <script src="config.js"></script>
@@ -217,14 +222,42 @@ $("#q").addEventListener("input",()=>{view="home";render()});
 load();
 let installPrompt=null;
 const installButton=document.getElementById("installApp");
-function showInstallButton(){installButton.hidden=false;installButton.textContent=lang==="ar"?"تثبيت التطبيق ⬇️":"Installer ⬇️";installButton.setAttribute("aria-label",lang==="ar"?"تثبيت HAMDO على الهاتف":"Installer HAMDO");}
+const installedKey="hamdoAppInstalled";
+const isInstalled=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true||localStorage.getItem(installedKey)==="yes";
+function updateInstallLabel(){
+ const ar=lang==="ar";
+ installButton.setAttribute("aria-label",ar?"تثبيت HAMDO على الهاتف":"Installer HAMDO");
+ document.getElementById("installAppLabel").textContent=ar?"ثبّت HAMDO في هاتفك":"Installer HAMDO";
+}
+function showInstallButton(){
+ if(isInstalled()){installButton.hidden=true;return;}
+ installButton.hidden=false;updateInstallLabel();
+}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;showInstallButton();});
 installButton.addEventListener("click",async()=>{
- if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.hidden=true;}
- else toast(lang==="ar"?"من قائمة المتصفح اختار «إضافة إلى الشاشة الرئيسية»":"Dans le menu du navigateur, choisissez « Ajouter à l’écran d’accueil »");
+ if(isInstalled()){installButton.hidden=true;return;}
+ if(installPrompt){
+  installPrompt.prompt();
+  const choice=await installPrompt.userChoice;
+  installPrompt=null;
+  if(choice.outcome==="accepted"){try{localStorage.setItem(installedKey,"yes")}catch(e){}installButton.hidden=true;}
+ }else{
+  toast(lang==="ar"?"من قائمة Chrome اختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»":"Dans le menu du navigateur, choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil »");
+ }
 });
-window.addEventListener("appinstalled",()=>{installButton.hidden=true;toast(lang==="ar"?"تم تثبيت HAMDO بنجاح 🎉":"HAMDO est installé 🎉");});
-if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.matchMedia("(display-mode: standalone)").matches)showInstallButton();
+window.addEventListener("appinstalled",()=>{try{localStorage.setItem(installedKey,"yes")}catch(e){}installButton.hidden=true;});
+if(!isInstalled())showInstallButton();
+(function(){
+ const btn=installButton;
+ try{const p=JSON.parse(localStorage.getItem("hamdoInstallPos")||"null");if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)){btn.style.left=p.x+"px";btn.style.top=p.y+"px";btn.style.right="auto";btn.style.bottom="auto";}}catch(e){}
+ let sx=0,sy=0,ox=0,oy=0,moved=false,dragging=false;
+ btn.addEventListener("pointerdown",e=>{dragging=true;moved=false;sx=e.clientX;sy=e.clientY;const r=btn.getBoundingClientRect();ox=r.left;oy=r.top;btn.setPointerCapture(e.pointerId);});
+ btn.addEventListener("pointermove",e=>{if(!dragging)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)>5||Math.abs(dy)>5)moved=true;if(!moved)return;const xx=Math.max(4,Math.min(innerWidth-btn.offsetWidth-4,ox+dx)),yy=Math.max(4,Math.min(innerHeight-btn.offsetHeight-4,oy+dy));btn.style.left=xx+"px";btn.style.top=yy+"px";btn.style.right="auto";btn.style.bottom="auto";});
+ const finish=()=>{if(!dragging)return;dragging=false;if(moved){const r=btn.getBoundingClientRect();try{localStorage.setItem("hamdoInstallPos",JSON.stringify({x:r.left,y:r.top}))}catch(e){}}};
+ btn.addEventListener("pointerup",finish);btn.addEventListener("pointercancel",finish);
+ btn.addEventListener("click",e=>{if(moved){e.preventDefault();e.stopImmediatePropagation();moved=false}},true);
+ window.addEventListener("resize",()=>{if(btn.hidden)return;const r=btn.getBoundingClientRect();btn.style.left=Math.max(4,Math.min(innerWidth-btn.offsetWidth-4,r.left))+"px";btn.style.top=Math.max(4,Math.min(innerHeight-btn.offsetHeight-4,r.top))+"px";btn.style.right="auto";btn.style.bottom="auto";});
+})();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
