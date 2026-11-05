@@ -84,6 +84,9 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
 .home-products-head h2{margin:0}
 .home-products-head button{border:1px solid var(--o);color:var(--od);border-radius:22px;padding:7px 13px;font-weight:700;background:#fff}
 @media(min-width:700px){.home-categories{grid-template-columns:repeat(6,minmax(0,1fr))}.service-strip{max-width:900px;margin-inline:auto}.hero{min-height:220px}}
+
+.hamdo-follow{margin:26px 14px 34px;padding:22px 16px;border-radius:22px;background:linear-gradient(145deg,#fff 0%,#F3E7D9 100%);border:1px solid #EADCCB;box-shadow:0 8px 22px rgba(82,54,31,.06)}
+.follow-inner{max-width:560px;margin:auto}.follow-mark{font-weight:900;letter-spacing:1px;color:var(--od);font-size:13px}.hamdo-follow h2{margin:8px 0;font-size:21px}.hamdo-follow p{color:#66584B;line-height:1.7;margin:0 0 12px}.hamdo-follow label:not(.follow-consent){display:block;font-size:14px;font-weight:700;margin:10px 0 5px}.hamdo-follow input:not([type=checkbox]){width:100%;height:48px;border:1px solid var(--g2);border-radius:12px;padding:0 13px;font:inherit;background:#fff;direction:rtl}.follow-consent{display:flex;gap:9px;align-items:flex-start;margin:14px 0;font-size:13px;line-height:1.6;color:#55483D}.follow-consent input{margin-top:4px;accent-color:var(--o);flex:0 0 auto}.follow-msg{font-size:14px;margin:9px 0!important}.hamdo-follow small{display:block;color:var(--g3);line-height:1.6;margin-top:10px}
 </style>
 </head>
 <body>
@@ -98,6 +101,23 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
 </header>
 <div class="chips" id="chips"></div>
 <main id="main"></main>
+<section class="hamdo-follow" aria-labelledby="followTitle">
+  <div class="follow-inner">
+    <div class="follow-mark">✦ HAMDO</div>
+    <h2 id="followTitle">تابع جديد HAMDO قبل الجميع</h2>
+    <p id="followDesc">سجّل اسمك ورقم هاتفك، واختار بنفسك واش توصلك أخبار المنتجات والعروض الجديدة.</p>
+    <form id="subscribeForm">
+      <label for="followName">الاسم الكامل</label>
+      <input id="followName" name="full_name" autocomplete="name" minlength="2" maxlength="80" required placeholder="الاسم الكامل">
+      <label for="followPhone">رقم الهاتف</label>
+      <input id="followPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="06 أو 07">
+      <label class="follow-consent"><input id="followConsent" name="consent" type="checkbox" required><span id="followConsentText">أوافق على توصلّي برسائل HAMDO حول المنتجات الجديدة والعروض. يمكنني إلغاء الاشتراك لاحقاً.</span></label>
+      <button class="cta" id="followSubmit" type="submit">سجّلني وتابع الجديد</button>
+      <p id="followMsg" class="follow-msg" role="status" aria-live="polite"></p>
+    </form>
+    <small>لن نعرض رقم هاتفك للزوار، ولن نرسِل لك عروضاً دون موافقتك.</small>
+  </div>
+</section>
 <div class="ov" id="ov"><div class="sh" id="sh"></div></div>
 <div id="toast"></div>
 <script src="config.js"></script>
@@ -210,6 +230,41 @@ async function load(){
 }
 $("#q").addEventListener("input",()=>{view="home";render()});
 load();
+const followForm=document.getElementById("subscribeForm");
+if(followForm){
+  followForm.addEventListener("submit",async e=>{
+    e.preventDefault();
+    const btn=document.getElementById("followSubmit"),msg=document.getElementById("followMsg");
+    const fd=new FormData(followForm);
+    const full_name=String(fd.get("full_name")||"").trim();
+    let phone=String(fd.get("phone")||"").replace(/[\\s().-]/g,"");
+    if(phone.startsWith("0")) phone="+212"+phone.slice(1);
+    else if(phone.startsWith("212")) phone="+"+phone;
+    if(!/^\\+212[5-7][0-9]{8}$/.test(phone)){
+      msg.textContent=lang==="ar"?"دخل رقم مغربي صحيح، مثال: 0612345678":"Saisissez un numéro marocain valide, ex. 0612345678";
+      return;
+    }
+    if(!document.getElementById("followConsent").checked)return;
+    btn.disabled=true;btn.textContent=lang==="ar"?"جارٍ التسجيل…":"Inscription…";msg.textContent="";
+    try{
+      const res=await fetch(HAMDO.url+"/rest/v1/marketing_subscribers",{
+        method:"POST",
+        headers:{apikey:HAMDO.key,"Content-Type":"application/json",Prefer:"return=minimal"},
+        body:JSON.stringify({full_name,phone,marketing_consent:true,source:"storefront"})
+      });
+      if(res.status===409){
+        msg.textContent=lang==="ar"?"رقمك مسجل من قبل، شكراً على ثقتك!":"Ce numéro est déjà inscrit. Merci !";
+      }else if(!res.ok){
+        const data=await res.json().catch(()=>({}));
+        throw new Error(data.message||data.details||"تعذر التسجيل، حاول مرة أخرى");
+      }else{
+        msg.textContent=lang==="ar"?"تم تسجيلك بنجاح! غادي نحتافظو بموافقتك باش نخبروك بالجديد.":"Inscription réussie ! Merci.";
+        followForm.reset();
+      }
+    }catch(err){msg.textContent=err.message}
+    finally{btn.disabled=false;btn.textContent=lang==="ar"?"سجّلني وتابع الجديد":"M’inscrire";}
+  });
+}
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
