@@ -85,8 +85,7 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
 .home-products-head button{border:1px solid var(--o);color:var(--od);border-radius:22px;padding:7px 13px;font-weight:700;background:#fff}
 @media(min-width:700px){.home-categories{grid-template-columns:repeat(6,minmax(0,1fr))}.service-strip{max-width:900px;margin-inline:auto}.hero{min-height:220px}}
 
-.hamdo-follow{margin:26px 14px 34px;padding:20px 16px;border-radius:22px;background:linear-gradient(145deg,#fff 0%,#F3E7D9 100%);border:1px solid #EADCCB;box-shadow:0 8px 22px rgba(82,54,31,.06);text-align:center}.follow-open{max-width:520px;width:100%;margin-top:8px;white-space:normal;line-height:1.5}
-.follow-inner{max-width:560px;margin:auto}.follow-mark{font-weight:900;letter-spacing:1px;color:var(--od);font-size:13px}.hamdo-follow h2{margin:8px 0;font-size:21px}.hamdo-follow p{color:#66584B;line-height:1.7;margin:0 0 12px}
+#followFloat{position:fixed;z-index:18;right:16px;bottom:92px;width:62px;height:62px;border-radius:50%;background:var(--o);color:#fff;box-shadow:0 5px 18px rgba(80,45,25,.28);display:flex;align-items:center;justify-content:center;font-size:28px;border:3px solid #fff;touch-action:none;user-select:none;cursor:grab}#followFloat:active{cursor:grabbing}#followFloat span{position:absolute;inset-inline-start:68px;white-space:nowrap;background:#fff;color:var(--od);border:1px solid var(--g2);border-radius:12px;padding:7px 10px;font-size:12px;font-weight:800;box-shadow:0 3px 10px #00000012;pointer-events:none}
 </style>
 </head>
 <body>
@@ -101,14 +100,7 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
 </header>
 <div class="chips" id="chips"></div>
 <main id="main"></main>
-<section class="hamdo-follow" aria-label="HAMDO offers">
-  <div class="follow-inner">
-    <div class="follow-mark">✦ HAMDO</div>
-    <h2 id="followTitle">سجّل معانا واستافد من أفضل العروض والهدايا بعد أول طلبياتك</h2>
-    <p id="followDesc">خليك قريب من الجديد ديالنا، والعروض والهدايا الحصرية.</p>
-    <button class="cta follow-open" data-act="follow" id="followOpen">سجّل معانا واستافد من العروض 🎁</button>
-  </div>
-</section>
+<button id="followFloat" type="button" aria-label="التسجيل في HAMDO" title="سجّل واستفد من العروض" data-act="follow">🎁<span id="followFloatLabel">سجّل واستفد من العروض</span></button>
 <div class="ov" id="ov"><div class="sh" id="sh"></div></div>
 <div id="toast"></div>
 <script src="config.js"></script>
@@ -225,9 +217,8 @@ load();
 const followForm=document.getElementById("subscribeForm");
 function updateFollowLang(){
   const ar=lang==="ar";
-  document.getElementById("followTitle").textContent=ar?"سجّل معانا واستافد من أفضل العروض والهدايا بعد أول طلبياتك":"Inscrivez-vous et profitez des meilleures offres et de cadeaux après vos premières commandes";
-  document.getElementById("followDesc").textContent=ar?"خليك قريب من الجديد ديالنا، والعروض والهدايا الحصرية.":"Restez au courant de nos nouveautés, offres et cadeaux exclusifs.";
-  document.getElementById("followOpen").textContent=ar?"سجّل معانا واستافد من العروض 🎁":"Inscrivez-vous et profitez des offres 🎁";
+  document.getElementById("followFloat").setAttribute("aria-label",ar?"التسجيل في HAMDO":"Inscription chez HAMDO");
+  document.getElementById("followFloatLabel").textContent=ar?"سجّل واستفد من العروض":"Inscrivez-vous aux offres";
 }
 function openFollowForm(){
   const ar=lang==="ar";
@@ -260,6 +251,35 @@ function openFollowForm(){
   });
 }
 updateFollowLang();
+// زر التسجيل العائم: يمكن للزبون سحبه إلى أي مكان مناسب على الشاشة.
+(function(){
+  const btn=document.getElementById("followFloat");
+  const saved=(()=>{try{return JSON.parse(localStorage.getItem("hamdoFollowPos")||"null")}catch(e){return null}})();
+  if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)){btn.style.left=saved.x+"px";btn.style.top=saved.y+"px";btn.style.right="auto";btn.style.bottom="auto"}
+  let startX=0,startY=0,origX=0,origY=0,moved=false,dragging=false;
+  btn.addEventListener("pointerdown",e=>{
+    dragging=true;moved=false;startX=e.clientX;startY=e.clientY;
+    const r=btn.getBoundingClientRect();origX=r.left;origY=r.top;
+    btn.setPointerCapture(e.pointerId);
+  });
+  btn.addEventListener("pointermove",e=>{
+    if(!dragging)return;
+    const dx=e.clientX-startX,dy=e.clientY-startY;
+    if(Math.abs(dx)>5||Math.abs(dy)>5)moved=true;
+    if(!moved)return;
+    const x=Math.max(4,Math.min(window.innerWidth-btn.offsetWidth-4,origX+dx));
+    const y=Math.max(4,Math.min(window.innerHeight-btn.offsetHeight-4,origY+dy));
+    btn.style.left=x+"px";btn.style.top=y+"px";btn.style.right="auto";btn.style.bottom="auto";
+  });
+  const finish=()=>{
+    if(!dragging)return;dragging=false;
+    if(moved){const r=btn.getBoundingClientRect();try{localStorage.setItem("hamdoFollowPos",JSON.stringify({x:r.left,y:r.top}))}catch(e){}}
+  };
+  btn.addEventListener("pointerup",finish);
+  btn.addEventListener("pointercancel",finish);
+  btn.addEventListener("click",e=>{if(moved){e.preventDefault();e.stopImmediatePropagation();moved=false}},true);
+  window.addEventListener("resize",()=>{const r=btn.getBoundingClientRect();const x=Math.max(4,Math.min(window.innerWidth-btn.offsetWidth-4,r.left));const y=Math.max(4,Math.min(window.innerHeight-btn.offsetHeight-4,r.top));btn.style.left=x+"px";btn.style.top=y+"px";btn.style.right="auto";btn.style.bottom="auto"});
+})();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
