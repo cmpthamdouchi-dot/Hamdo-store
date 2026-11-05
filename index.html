@@ -68,15 +68,7 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
 .row .em{width:56px;height:56px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px}
 .q{display:flex;align-items:center;gap:8px}.qtybox{display:flex;align-items:center;gap:10px;margin:12px 0}.qtybox button{background:var(--g1);border-radius:9px;width:36px;height:36px;font-weight:700}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.actions .secondary{background:#222}
 #checkoutForm{margin-top:14px;text-align:right}#checkoutForm label{display:block;font-weight:600;font-size:15px;margin:12px 0 5px}#checkoutForm input,#checkoutForm textarea{display:block;width:100%;max-width:100%;min-height:48px;padding:12px 14px;border:1px solid var(--g2);border-radius:12px;background:#fff;color:var(--tx);font:inherit;font-size:16px;direction:rtl;text-align:right;margin:0 0 12px;outline:none}#checkoutForm textarea{min-height:92px;resize:vertical}#checkoutForm input:focus,#checkoutForm textarea:focus{border-color:var(--o);box-shadow:0 0 0 2px rgba(244,107,53,.12)}.q button{width:36px;height:36px;border-radius:10px;background:var(--g1);font-weight:700}
-/* Signup form layout: one full-width field per row */
-#subscribeForm{display:block;width:100%;text-align:right;direction:rtl}
-#subscribeForm>label:not(:has(input[type="checkbox"])){display:block;width:100%;font-weight:650;font-size:15px;margin:14px 0 6px}
-#subscribeForm>input{display:block;width:100%;max-width:100%;min-width:0;height:50px;min-height:50px;padding:11px 14px;border:1px solid var(--g2);border-radius:12px;background:#fff;color:var(--tx);font:inherit;font-size:16px;direction:rtl;text-align:right;margin:0;outline:none}
-#subscribeForm>input:focus{border-color:var(--o);box-shadow:0 0 0 2px rgba(244,107,53,.12)}
-#subscribeForm label:has(input[type="checkbox"]){display:flex!important;width:100%;align-items:flex-start;gap:10px;margin:16px 0!important;font-size:13px;line-height:1.7}
-#subscribeForm input[type="checkbox"]{flex:0 0 20px;width:20px;height:20px;min-height:20px;margin:3px 0 0;accent-color:var(--o)}
-#subscribeForm .cta{display:block;width:100%;margin-top:14px}
-#subscribeForm #followMsg{min-height:0;margin:10px 0 0;padding:0;background:transparent}
+
 
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 18px;border-radius:12px;z-index:30;display:none}
 
@@ -105,12 +97,12 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
     <button class="ib" data-act="lang" id="lb"></button>
     <button class="ib" data-act="favs" aria-label="favorites">♥<span class="bd" id="fc"></span></button>
     <button class="ib" data-act="cart" aria-label="cart">🛒<span class="bd" id="cc"></span></button>
+    <button class="ib" id="installApp" type="button" hidden>⬇️</button>
   </div>
   <input class="sb" id="q" list="dl" autocomplete="off"><datalist id="dl"></datalist>
 </header>
 <div class="chips" id="chips"></div>
 <main id="main"></main>
-<button id="followFloat" type="button" aria-label="التسجيل في HAMDO" title="سجّل واستفد من العروض" data-act="follow">🎁<span id="followFloatLabel">سجّل واستفد من العروض</span></button>
 <div class="ov" id="ov"><div class="sh" id="sh"></div></div>
 <div id="toast"></div>
 <script src="config.js"></script>
@@ -191,7 +183,6 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
   else if(a==="cart")drawCart();
   else if(a==="inc"){cart[x].q++;sv("cart",cart);drawCart();render()}
   else if(a==="dec"){cart[x].q--;if(cart[x].q<=0)cart.splice(x,1);sv("cart",cart);drawCart();render()}
-  else if(a==="follow")openFollowForm();
   else if(a==="close")closeSheet();
 });
 async function load(){
@@ -224,72 +215,16 @@ async function load(){
 }
 $("#q").addEventListener("input",()=>{view="home";render()});
 load();
-const followForm=document.getElementById("subscribeForm");
-function updateFollowLang(){
-  const ar=lang==="ar";
-  document.getElementById("followFloat").setAttribute("aria-label",ar?"التسجيل في HAMDO":"Inscription chez HAMDO");
-  document.getElementById("followFloatLabel").textContent=ar?"سجّل واستفد من العروض":"Inscrivez-vous aux offres";
-}
-function openFollowForm(){
-  const ar=lang==="ar";
-  sheet(`<h2 style="margin:0 0 8px">${ar?"سجّل مع HAMDO":"Inscrivez-vous chez HAMDO"}</h2>
-  <p class="note">${ar?"دخل معلوماتك ووافق إلا بغيتي توصلك أخبار المنتجات والعروض.":"Entrez vos coordonnées et acceptez si vous souhaitez recevoir nos nouveautés et offres."}</p>
-  <form id="subscribeForm" style="margin-top:12px">
-    <label>${ar?"الاسم الكامل":"Nom complet"}</label><input name="full_name" required minlength="2" maxlength="80" autocomplete="name" placeholder="${ar?"الاسم الكامل":"Nom complet"}">
-    <label>${ar?"رقم الهاتف":"Téléphone"}</label><input name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="06 أو 07">
-    <label style="display:flex;gap:9px;align-items:flex-start;margin:14px 0;font-size:13px;line-height:1.6"><input name="consent" type="checkbox" required style="width:auto;min-height:0;margin-top:4px"><span>${ar?"أوافق على توصلّي برسائل HAMDO حول المنتجات الجديدة والعروض والهدايا. يمكنني إلغاء الاشتراك لاحقاً.":"J’accepte de recevoir les nouveautés, offres et cadeaux HAMDO. Je peux me désinscrire à tout moment."}</span></label>
-    <button class="cta" id="followSubmit" type="submit">${ar?"سجّلني":"M’inscrire"}</button>
-    <p id="followMsg" class="note" role="status" aria-live="polite"></p>
-  </form>`);
-  const form=document.getElementById("subscribeForm");
-  form.addEventListener("submit",async e=>{
-    e.preventDefault();
-    const btn=document.getElementById("followSubmit"),msg=document.getElementById("followMsg");
-    const fd=new FormData(form),full_name=String(fd.get("full_name")||"").trim();
-    let phone=String(fd.get("phone")||"").replace(/[\s().-]/g,"");
-    if(phone.startsWith("0"))phone="+212"+phone.slice(1);else if(phone.startsWith("212"))phone="+"+phone;
-    if(!/^\+212[5-7][0-9]{8}$/.test(phone)){msg.textContent=ar?"دخل رقم مغربي صحيح، مثال: 0612345678":"Saisissez un numéro marocain valide, ex. 0612345678";return}
-    if(!fd.get("consent"))return;
-    btn.disabled=true;btn.textContent=ar?"جارٍ التسجيل…":"Inscription…";msg.textContent="";
-    try{
-      const res=await fetch(HAMDO.url+"/rest/v1/marketing_subscribers",{method:"POST",headers:{apikey:HAMDO.key,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({full_name,phone,marketing_consent:true,source:"storefront"})});
-      if(res.status===409){msg.textContent=ar?"رقمك مسجل من قبل، شكراً على ثقتك!":"Ce numéro est déjà inscrit. Merci !"}
-      else if(!res.ok){const data=await res.json().catch(()=>({}));throw new Error(data.message||data.details||"تعذر التسجيل، حاول مرة أخرى")}
-      else{msg.textContent=ar?"تسجلتي بنجاح! شكراً على ثقتك في HAMDO 🎁":"Inscription réussie ! Merci de votre confiance.";form.reset()}
-    }catch(err){msg.textContent=err.message}
-    finally{btn.disabled=false;btn.textContent=ar?"سجّلني":"M’inscrire"}
-  });
-}
-updateFollowLang();
-// زر التسجيل العائم: يمكن للزبون سحبه إلى أي مكان مناسب على الشاشة.
-(function(){
-  const btn=document.getElementById("followFloat");
-  const saved=(()=>{try{return JSON.parse(localStorage.getItem("hamdoFollowPos")||"null")}catch(e){return null}})();
-  if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)){btn.style.left=saved.x+"px";btn.style.top=saved.y+"px";btn.style.right="auto";btn.style.bottom="auto"}
-  let startX=0,startY=0,origX=0,origY=0,moved=false,dragging=false;
-  btn.addEventListener("pointerdown",e=>{
-    dragging=true;moved=false;startX=e.clientX;startY=e.clientY;
-    const r=btn.getBoundingClientRect();origX=r.left;origY=r.top;
-    btn.setPointerCapture(e.pointerId);
-  });
-  btn.addEventListener("pointermove",e=>{
-    if(!dragging)return;
-    const dx=e.clientX-startX,dy=e.clientY-startY;
-    if(Math.abs(dx)>5||Math.abs(dy)>5)moved=true;
-    if(!moved)return;
-    const x=Math.max(4,Math.min(window.innerWidth-btn.offsetWidth-4,origX+dx));
-    const y=Math.max(4,Math.min(window.innerHeight-btn.offsetHeight-4,origY+dy));
-    btn.style.left=x+"px";btn.style.top=y+"px";btn.style.right="auto";btn.style.bottom="auto";
-  });
-  const finish=()=>{
-    if(!dragging)return;dragging=false;
-    if(moved){const r=btn.getBoundingClientRect();try{localStorage.setItem("hamdoFollowPos",JSON.stringify({x:r.left,y:r.top}))}catch(e){}}
-  };
-  btn.addEventListener("pointerup",finish);
-  btn.addEventListener("pointercancel",finish);
-  btn.addEventListener("click",e=>{if(moved){e.preventDefault();e.stopImmediatePropagation();moved=false}},true);
-  window.addEventListener("resize",()=>{const r=btn.getBoundingClientRect();const x=Math.max(4,Math.min(window.innerWidth-btn.offsetWidth-4,r.left));const y=Math.max(4,Math.min(window.innerHeight-btn.offsetHeight-4,r.top));btn.style.left=x+"px";btn.style.top=y+"px";btn.style.right="auto";btn.style.bottom="auto"});
-})();
+let installPrompt=null;
+const installButton=document.getElementById("installApp");
+function showInstallButton(){installButton.hidden=false;installButton.textContent=lang==="ar"?"تثبيت التطبيق ⬇️":"Installer ⬇️";installButton.setAttribute("aria-label",lang==="ar"?"تثبيت HAMDO على الهاتف":"Installer HAMDO");}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;showInstallButton();});
+installButton.addEventListener("click",async()=>{
+ if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.hidden=true;}
+ else toast(lang==="ar"?"من قائمة المتصفح اختار «إضافة إلى الشاشة الرئيسية»":"Dans le menu du navigateur, choisissez « Ajouter à l’écran d’accueil »");
+});
+window.addEventListener("appinstalled",()=>{installButton.hidden=true;toast(lang==="ar"?"تم تثبيت HAMDO بنجاح 🎉":"HAMDO est installé 🎉");});
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.matchMedia("(display-mode: standalone)").matches)showInstallButton();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
