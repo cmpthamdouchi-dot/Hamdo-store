@@ -89,8 +89,11 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
 
 #followFloat{position:fixed;z-index:18;right:16px;bottom:92px;width:62px;height:62px;border-radius:50%;background:var(--o);color:#fff;box-shadow:0 5px 18px rgba(80,45,25,.28);display:flex;align-items:center;justify-content:center;font-size:28px;border:3px solid #fff;touch-action:none;user-select:none;cursor:grab}#followFloat:active{cursor:grabbing}#followFloat span{position:absolute;inset-inline-start:68px;white-space:nowrap;background:#fff;color:var(--od);border:1px solid var(--g2);border-radius:12px;padding:7px 10px;font-size:12px;font-weight:800;box-shadow:0 3px 10px #00000012;pointer-events:none}
 
-#installApp{position:fixed;z-index:19;right:16px;bottom:92px;width:62px;height:62px;border-radius:50%;background:var(--o);color:#fff;box-shadow:0 5px 18px rgba(80,45,25,.28);display:flex;align-items:center;justify-content:center;font-size:27px;border:3px solid #fff;touch-action:none;user-select:none;cursor:grab}
-#installApp:active{cursor:grabbing}
+#installApp{position:fixed;z-index:19;right:16px;bottom:92px;width:66px;height:66px;border-radius:50%;background:#fff;color:var(--od);box-shadow:0 5px 18px rgba(80,45,25,.28);display:flex;align-items:center;justify-content:center;border:3px solid var(--o);touch-action:none;user-select:none;cursor:grab;animation:hamdoInstallPulse 2.4s ease-in-out infinite}
+#installApp:active{cursor:grabbing;animation:none}
+#installApp img{width:100%;height:100%;object-fit:contain;border-radius:50%;padding:3px;animation:hamdoInstallFloat 1.8s ease-in-out infinite;pointer-events:none}
+@keyframes hamdoInstallFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
+@keyframes hamdoInstallPulse{0%,100%{box-shadow:0 5px 18px rgba(80,45,25,.24),0 0 0 0 rgba(233,120,69,.18)}50%{box-shadow:0 7px 22px rgba(80,45,25,.3),0 0 0 7px rgba(233,120,69,0)}}
 #installApp span{position:absolute;inset-inline-start:68px;white-space:nowrap;background:#fff;color:var(--od);border:1px solid var(--g2);border-radius:12px;padding:7px 10px;font-size:12px;font-weight:800;box-shadow:0 3px 10px #00000012;pointer-events:none}
 #installApp[hidden]{display:none!important}
 </style>
@@ -107,7 +110,7 @@ h2{font-size:20px;margin:22px 14px 12px;font-weight:800;color:#382F28}
 </header>
 <div class="chips" id="chips"></div>
 <main id="main"></main>
-<button id="installApp" type="button" aria-label="تثبيت HAMDO" title="ثبّت HAMDO">⬇️<span id="installAppLabel">ثبّت HAMDO في هاتفك</span></button>
+<button id="installApp" type="button" aria-label="تثبيت HAMDO" title="ثبّت HAMDO"><img src="hamdo-brand-beige.jpg?v=1" alt=""><span id="installAppLabel">ثبّت HAMDO في هاتفك</span></button>
 <div class="ov" id="ov"><div class="sh" id="sh"></div></div>
 <div id="toast"></div>
 <script src="config.js"></script>
