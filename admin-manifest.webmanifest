@@ -1,0 +1,15 @@
+{
+  "id": "./admin.html",
+  "name": "HAMDO — لوحة الإدارة",
+  "short_name": "HAMDO إدارة",
+  "description": "لوحة إدارة متجر HAMDO والطلبات",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./admin.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F1",
+  "theme_color": "#F46B35",
+  "icons": [{"src":"hamdo-brand-beige.jpg","sizes":"512x512","type":"image/jpeg","purpose":"any maskable"}]
+}
